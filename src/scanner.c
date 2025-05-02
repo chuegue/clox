@@ -1,6 +1,6 @@
 #include "scanner.h"
 
-void tokenize(char *file_contents)
+Scanner *tokenize(char *file_contents)
 {
     Scanner *scanner = init_scanner(file_contents);
     size_t file_len = strlen(file_contents);
@@ -10,7 +10,8 @@ void tokenize(char *file_contents)
         scanToken(scanner);
     }
 
-    printf("EOF  null\n"); // Placeholder, remove this line when implementing the scanner
+    //implement EOF token
+    return scanner;
 }
 
 Scanner *init_scanner(char *file_contents)

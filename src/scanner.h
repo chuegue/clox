@@ -8,7 +8,7 @@
 typedef struct Scanner_ {
     char *source;
     Token *tokens;
-    size_t, index_tokens;
+    size_t index_tokens;
     size_t size_tokens;
     int start;
     int current;
@@ -37,5 +37,6 @@ typedef enum TokenType_
     STAR,
 } TokenType;
 
-void addToken(TokenType type);
+Scanner *tokenize(char *file_contents);
+
 #endif // __SCANNER__
