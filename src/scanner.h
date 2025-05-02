@@ -30,13 +30,14 @@ typedef struct Token_ {
 typedef struct Scanner_ {
     char *source;
     Token *tokens;
-    size_t index_tokens;
+    size_t number_tokens;
     size_t size_tokens;
     int start;
     int current;
     int line;
 } Scanner;
 
-Scanner *tokenize(char *file_contents);
+Scanner *scanToken(char *file_contents);
+char *token_type_to_str(TokenType type);
 
 #endif // __SCANNER__

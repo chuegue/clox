@@ -22,10 +22,15 @@ int main(int argc, char *argv[]) {
 
         char *file_contents = read_file_contents(argv[2]);
 
-        Scanner *scanner = tokenize(file_contents);
-
+        Scanner *scanner = scanToken(file_contents);
+        fprintf(stderr, "Number of tokens = %d\n", scanner->number_tokens);
+        for(size_t i = 0; i < scanner->number_tokens; i++){
+            printf("%s %s null\n", token_type_to_str(scanner->tokens[i].type), scanner->tokens[i].lexeme);
+        }
+        printf("EOF  null\n");
         
         free(file_contents);
+        free(scanner);
     } else {
         fprintf(stderr, "Unknown command: %s\n", command);
         return 1;
