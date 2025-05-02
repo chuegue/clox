@@ -134,7 +134,14 @@ Scanner *scanToken(char *file_contents)
                 fprintf(stderr, "[line 1] Error: Unexpected character: %c\n", c);
                 scanner->had_error = 1;
                 break;
-
+            case ' ':
+            case '\r':
+            case '\t':
+                // Ignore whitespace.
+                break;
+            case '\n':
+                scanner->line++;
+                break;
             default:
                 fprintf(stderr, "Unexpected char: %s\n", c);
             }
