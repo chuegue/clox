@@ -1,19 +1,5 @@
 #include "scanner.h"
 
-Scanner *tokenize(char *file_contents)
-{
-    Scanner *scanner = init_scanner(file_contents);
-    size_t file_len = strlen(file_contents);
-    if (file_len > 0)
-    {
-        while(scanner->current < file_len);
-        scanToken(scanner);
-    }
-
-    //implement EOF token
-    return scanner;
-}
-
 Scanner *init_scanner(char *file_contents)
 {
     Scanner *scanner = (Scanner *)calloc(1, sizeof(Scanner));
@@ -35,6 +21,23 @@ Token *init_token(TokenType type, char *lexeme, void *literal, int line)
     return token;
 }
 
+char advance(Scanner *scanner)
+{
+    return scanner->source[scanner->current++];
+}
+
+void addToken(Scanner *scanner, TokenType type, void *literal /*temp i guess*/)
+{
+    char *text = calloc(scanner->current - scanner->start + 2);
+    strncpy(text, scanner->source + scanner->start, scanner->current - scanner->start);
+    if (scanner->index_tokens >= scanner->size_tokens)
+    {
+        fprintf(stderr, "Not implemented: increase tokens array size\n");
+        exit(1);
+    }
+    memcpy(&(scanner->tokens[scanner->index_tokens]), init_token(type, text, literal, scanner->line), sizeof(Token));
+}
+
 void scanToken(Scanner *scanner)
 {
     char c = advance(scanner);
@@ -52,19 +55,16 @@ void scanToken(Scanner *scanner)
     }
 }
 
-char advance(Scanner *scanner)
+Scanner *tokenize(char *file_contents)
 {
-    return scanner->source[scanner->current++];
-}
-
-void addToken(Scanner *scanner, TokenType type, void *literal /*temp i guess*/)
-{
-    char *text = calloc(scanner->current - scanner->start + 2);
-    strncpy(text, scanner->source + scanner->start, scanner->current - scanner->start);
-    if (scanner->index_tokens >= scanner->size_tokens)
+    Scanner *scanner = init_scanner(file_contents);
+    size_t file_len = strlen(file_contents);
+    if (file_len > 0)
     {
-        fprintf(stderr, "Not implemented: increase tokens array size\n");
-        exit(1);
+        while(scanner->current < file_len);
+        scanToken(scanner);
     }
-    memcpy(&(scanner->tokens[scanner->index_tokens]), init_token(type, text, literal, scanner->line), sizeof(Token));
+
+    //implement EOF token
+    return scanner;
 }
