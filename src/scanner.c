@@ -131,7 +131,7 @@ Scanner *scanToken(char *file_contents)
             case '$':
             case '@':
             case '%':
-                fprintf(stderr, "[line 1] Error: Unexpected character: %c\n", c);
+                fprintf(stderr, "[line %d] Error: Unexpected character: %c\n", , scanner->line, c);
                 scanner->had_error = 1;
                 break;
             case ' ':
