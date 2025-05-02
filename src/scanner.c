@@ -146,29 +146,33 @@ int isAlphanumeric(char c)
 }
 
 Keyword keywords[] = {
-    {"and",    AND},
-    {"class",  CLASS},
-    {"else",   ELSE},
-    {"false",  FALSE},
-    {"for",    FOR},
-    {"fun",    FUN},
-    {"if",     IF},
-    {"nil",    NIL},
-    {"or",     OR},
-    {"print",  PRINT},
+    {"and", AND},
+    {"class", CLASS},
+    {"else", ELSE},
+    {"false", FALSE},
+    {"for", FOR},
+    {"fun", FUN},
+    {"if", IF},
+    {"nil", NIL},
+    {"or", OR},
+    {"print", PRINT},
     {"return", RETURN},
-    {"super",  SUPER},
-    {"this",   THIS},
-    {"true",   TRUE},
-    {"var",    VAR},
-    {"while",  WHILE},
+    {"super", SUPER},
+    {"this", THIS},
+    {"true", TRUE},
+    {"var", VAR},
+    {"while", WHILE},
 };
 
 const int keywordCount = sizeof(keywords) / sizeof(Keyword);
 
-TokenType get_keyword_type(const char* text) {
-    for (int i = 0; i < keywordCount; i++) {
-        if (strcmp(text, keywords[i].keyword) == 0) {
+TokenType get_keyword_type(const char *text)
+{
+    fprintf(stderr, "%s\n", text);
+    for (int i = 0; i < keywordCount; i++)
+    {
+        if (strcmp(text, keywords[i].keyword) == 0)
+        {
             return keywords[i].type;
         }
     }
@@ -182,8 +186,8 @@ void identifier(Scanner *scanner)
         advance(scanner);
     }
     char *value = calloc(scanner->current - scanner->start + 2, sizeof(char));
+    strncpy(value, scanner->source + scanner->start, scanner->current - scanner->start);
     TokenType type = get_keyword_type(value);
-    strncpy(value, scanner->source + scanner->start, scanner->current - scanner->start - 1);
     addToken(scanner, type, NULL);
 }
 
@@ -300,44 +304,120 @@ char *token_type_to_str(TokenType type)
     char *text;
     switch (type)
     {
-    case LEFT_PAREN:     text = strdup("LEFT_PAREN"); break;
-    case RIGHT_PAREN:    text = strdup("RIGHT_PAREN"); break;
-    case LEFT_BRACE:     text = strdup("LEFT_BRACE"); break;
-    case RIGHT_BRACE:    text = strdup("RIGHT_BRACE"); break;
-    case COMMA:          text = strdup("COMMA"); break;
-    case DOT:            text = strdup("DOT"); break;
-    case MINUS:          text = strdup("MINUS"); break;
-    case PLUS:           text = strdup("PLUS"); break;
-    case SEMICOLON:      text = strdup("SEMICOLON"); break;
-    case SLASH:          text = strdup("SLASH"); break;
-    case STAR:           text = strdup("STAR"); break;
-    case BANG:           text = strdup("BANG"); break;
-    case BANG_EQUAL:     text = strdup("BANG_EQUAL"); break;
-    case EQUAL:          text = strdup("EQUAL"); break;
-    case EQUAL_EQUAL:    text = strdup("EQUAL_EQUAL"); break;
-    case LESS:           text = strdup("LESS"); break;
-    case LESS_EQUAL:     text = strdup("LESS_EQUAL"); break;
-    case GREATER:        text = strdup("GREATER"); break;
-    case GREATER_EQUAL:  text = strdup("GREATER_EQUAL"); break;
-    case STRING:         text = strdup("STRING"); break;
-    case NUMBER:         text = strdup("NUMBER"); break;
-    case IDENTIFIER:     text = strdup("IDENTIFIER"); break;
-    case AND:            text = strdup("AND"); break;
-    case CLASS:          text = strdup("CLASS"); break;
-    case ELSE:           text = strdup("ELSE"); break;
-    case FALSE:          text = strdup("FALSE"); break;
-    case FOR:            text = strdup("FOR"); break;
-    case FUN:            text = strdup("FUN"); break;
-    case IF:             text = strdup("IF"); break;
-    case NIL:            text = strdup("NIL"); break;
-    case OR:             text = strdup("OR"); break;
-    case PRINT:          text = strdup("PRINT"); break;
-    case RETURN:         text = strdup("RETURN"); break;
-    case SUPER:          text = strdup("SUPER"); break;
-    case THIS:           text = strdup("THIS"); break;
-    case TRUE:           text = strdup("TRUE"); break;
-    case VAR:            text = strdup("VAR"); break;
-    case WHILE:          text = strdup("WHILE"); break;
+    case LEFT_PAREN:
+        text = strdup("LEFT_PAREN");
+        break;
+    case RIGHT_PAREN:
+        text = strdup("RIGHT_PAREN");
+        break;
+    case LEFT_BRACE:
+        text = strdup("LEFT_BRACE");
+        break;
+    case RIGHT_BRACE:
+        text = strdup("RIGHT_BRACE");
+        break;
+    case COMMA:
+        text = strdup("COMMA");
+        break;
+    case DOT:
+        text = strdup("DOT");
+        break;
+    case MINUS:
+        text = strdup("MINUS");
+        break;
+    case PLUS:
+        text = strdup("PLUS");
+        break;
+    case SEMICOLON:
+        text = strdup("SEMICOLON");
+        break;
+    case SLASH:
+        text = strdup("SLASH");
+        break;
+    case STAR:
+        text = strdup("STAR");
+        break;
+    case BANG:
+        text = strdup("BANG");
+        break;
+    case BANG_EQUAL:
+        text = strdup("BANG_EQUAL");
+        break;
+    case EQUAL:
+        text = strdup("EQUAL");
+        break;
+    case EQUAL_EQUAL:
+        text = strdup("EQUAL_EQUAL");
+        break;
+    case LESS:
+        text = strdup("LESS");
+        break;
+    case LESS_EQUAL:
+        text = strdup("LESS_EQUAL");
+        break;
+    case GREATER:
+        text = strdup("GREATER");
+        break;
+    case GREATER_EQUAL:
+        text = strdup("GREATER_EQUAL");
+        break;
+    case STRING:
+        text = strdup("STRING");
+        break;
+    case NUMBER:
+        text = strdup("NUMBER");
+        break;
+    case IDENTIFIER:
+        text = strdup("IDENTIFIER");
+        break;
+    case AND:
+        text = strdup("AND");
+        break;
+    case CLASS:
+        text = strdup("CLASS");
+        break;
+    case ELSE:
+        text = strdup("ELSE");
+        break;
+    case FALSE:
+        text = strdup("FALSE");
+        break;
+    case FOR:
+        text = strdup("FOR");
+        break;
+    case FUN:
+        text = strdup("FUN");
+        break;
+    case IF:
+        text = strdup("IF");
+        break;
+    case NIL:
+        text = strdup("NIL");
+        break;
+    case OR:
+        text = strdup("OR");
+        break;
+    case PRINT:
+        text = strdup("PRINT");
+        break;
+    case RETURN:
+        text = strdup("RETURN");
+        break;
+    case SUPER:
+        text = strdup("SUPER");
+        break;
+    case THIS:
+        text = strdup("THIS");
+        break;
+    case TRUE:
+        text = strdup("TRUE");
+        break;
+    case VAR:
+        text = strdup("VAR");
+        break;
+    case WHILE:
+        text = strdup("WHILE");
+        break;
 
     default:
         text = strdup("NOT_IMPLEMENTED");
