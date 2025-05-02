@@ -27,6 +27,7 @@ typedef enum TokenType_
     GREATER,
     GREATER_EQUAL,
     STRING,
+    NUMBER,
 } TokenType;
 
 typedef struct Token_
@@ -51,5 +52,6 @@ typedef struct Scanner_
 
 Scanner *scanToken(char *file_contents);
 char *token_type_to_str(TokenType type);
+void free_scanner(Scanner *scanner);
 
 #endif // __SCANNER__

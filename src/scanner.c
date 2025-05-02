@@ -17,6 +17,10 @@ void free_scanner(Scanner *scanner)
     for (size_t i = 0; i < scanner->number_tokens; i++)
     {
         free(scanner->tokens[i].lexeme);
+        if (scanner->tokens[i].literal != NULL)
+        {
+            free(scanner->tokens[i].literal);
+        }
     }
     free(scanner->tokens);
     free(scanner);
@@ -94,6 +98,39 @@ void string(Scanner *scanner)
     char *value = calloc(scanner->current - scanner->start + 2, sizeof(char));
     strncpy(value, scanner->source + scanner->start + 1, scanner->current - scanner->start - 2);
     addToken(scanner, STRING, value);
+}
+
+int isDigit(char c)
+{
+    return c >= '0' && c <= '9';
+}
+
+char peekNext(Scanner *scanner)
+{
+    if (scanner->current + 1 >= strlen(scanner->source))
+        return '\0';
+    return scanner->source[scanner->current + 1];
+}
+
+void number(Scanner *scanner)
+{
+    while (isDigit(peek(scanner)))
+    {
+        advance(scanner);
+    }
+    if (peek(scanner) == '.' && isDigit(peekNext(scanner)))
+    {
+        advance(scanner);
+        while (isDigit(peek(scanner)))
+        {
+            advance(scanner);
+        }
+    }
+    char *lexeme = calloc(scanner->current - scanner->start + 2, sizeof(char));
+    strncpy(lexeme, scanner->source + scanner->start, scanner->current - scanner->start);
+    double *value = malloc(sizeof(double));
+    *value = strtod(lexeme, (char **)NULL);
+    addToken(scanner, NUMBER, (void *)value);
 }
 
 Scanner *scanToken(char *file_contents)
@@ -182,7 +219,14 @@ Scanner *scanToken(char *file_contents)
                 scanner->line++;
                 break;
             default:
-                fprintf(stderr, "Unexpected char: %s\n", c);
+                if (isDigit(c))
+                {
+                    number(scanner);
+                }
+                else
+                {
+                    fprintf(stderr, "Unexpected char: %s\n", c);
+                }
             }
         }
         // implement EOF token
@@ -254,6 +298,9 @@ char *token_type_to_str(TokenType type)
         break;
     case STRING:
         text = strdup("STRING");
+        break;
+    case NUMBER:
+        text = strdup("NUMBER");
         break;
 
     default:

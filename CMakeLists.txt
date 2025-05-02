@@ -4,6 +4,8 @@ project(codecrafters-interpreter)
 
 file(GLOB_RECURSE SOURCE_FILES src/*.c src/*.h)
 
-set(CMAKE_C_STANDARD 23) # Enable the C23 standard
+set(CMAKE_C_STANDARD 23)
 
 add_executable(interpreter ${SOURCE_FILES})
+
+target_link_libraries(interpreter m)
