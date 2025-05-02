@@ -11,9 +11,11 @@ Scanner *init_scanner(char *file_contents)
     return scanner;
 }
 
-void free_scanner(Scanner *scanner){
+void free_scanner(Scanner *scanner)
+{
     free(scanner->source);
-    for(size_t i = 0; i < scanner-> number_tokens; i++){
+    for (size_t i = 0; i < scanner->number_tokens; i++)
+    {
         free(scanner->tokens[i].lexeme);
     }
     free(scanner->tokens);
@@ -39,7 +41,7 @@ void addToken(Scanner *scanner, TokenType type, void *literal /*temp i guess*/)
 {
     char *text = calloc(scanner->current - scanner->start + 2, sizeof(char));
     strncpy(text, scanner->source + scanner->start, scanner->current - scanner->start);
-    //fprintf(stderr, "%d %d\n", scanner->start, scanner->current);
+    // fprintf(stderr, "%d %d\n", scanner->start, scanner->current);
     if (scanner->number_tokens >= scanner->size_tokens)
     {
         fprintf(stderr, "Not implemented: increase tokens array size\n");
@@ -66,6 +68,12 @@ Scanner *scanToken(char *file_contents)
             case ')':
                 addToken(scanner, RIGHT_PAREN, NULL);
                 break;
+            case '{':
+                addToken(scanner, LEFT_BRACE, NULL);
+                break;
+            case '}':
+                addToken(scanner, RIGHT_BRACE, NULL);
+                break;
 
             default:
                 fprintf(stderr, "Unexpected char: %s\n", c);
@@ -86,6 +94,12 @@ char *token_type_to_str(TokenType type)
         break;
     case RIGHT_PAREN:
         text = strdup("RIGHT_PAREN");
+        break;
+    case LEFT_BRACE:
+        text = strdup("LEFT_BRACE");
+        break;
+    case RIGHT_BRACE:
+        text = strdup("RIGHT_BRACE");
         break;
     default:
         text = strdup("NOT_IMPLEMENTED");
