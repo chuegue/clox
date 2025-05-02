@@ -60,6 +60,42 @@ int match(Scanner *scanner, char expected)
     return 1;
 }
 
+int isAtEnd(Scanner *scanner)
+{
+    return scanner->current >= strlen(scanner->source);
+}
+
+char peek(Scanner *scanner)
+{
+    if (isAtEnd(scanner))
+    {
+        return '\0';
+    }
+    return scanner->source[scanner->current];
+}
+
+void string(Scanner *scanner)
+{
+    while (peek(scanner) != '"' && !isAtEnd(scanner))
+    {
+        if (peek(scanner) == '\n')
+        {
+            scanner->line++;
+        }
+        advance(scanner);
+    }
+    if (isAtEnd(scanner))
+    {
+        fprintf(stderr, "[line %d] Error: Unterminated string.\n", scanner->line);
+        scanner->had_error = 1;
+        return;
+    }
+    advance(scanner);
+    char *value = calloc(scanner->current - scanner->start + 2, sizeof(char));
+    strncpy(value, scanner->source + scanner->start + 1, scanner->current - scanner->start - 2);
+    addToken(scanner, STRING, value);
+}
+
 Scanner *scanToken(char *file_contents)
 {
     Scanner *scanner = init_scanner(file_contents);
@@ -114,6 +150,9 @@ Scanner *scanToken(char *file_contents)
                 {
                     addToken(scanner, SLASH, NULL);
                 }
+                break;
+            case '"':
+                string(scanner);
                 break;
             case '!':
                 addToken(scanner, match(scanner, '=') ? BANG_EQUAL : BANG, NULL);
@@ -212,6 +251,9 @@ char *token_type_to_str(TokenType type)
         break;
     case SLASH:
         text = strdup("SLASH");
+        break;
+    case STRING:
+        text = strdup("STRING");
         break;
 
     default:

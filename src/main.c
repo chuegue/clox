@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
         Scanner *scanner = scanToken(file_contents);
         fprintf(stderr, "Number of tokens = %d\n", scanner->number_tokens);
         for(size_t i = 0; i < scanner->number_tokens; i++){
-            printf("%s %s null\n", token_type_to_str(scanner->tokens[i].type), scanner->tokens[i].lexeme);
+            printf("%s %s %s\n", token_type_to_str(scanner->tokens[i].type), scanner->tokens[i].lexeme, scanner->tokens[i].literal == NULL ? "null" : (char *)scanner->tokens[i].literal);
         }
         printf("EOF  null\n");
         if (scanner->had_error == 1) error_code = 65;
