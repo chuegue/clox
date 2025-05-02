@@ -61,10 +61,12 @@ Scanner *tokenize(char *file_contents)
     size_t file_len = strlen(file_contents);
     if (file_len > 0)
     {
-        while(scanner->current < file_len);
-        scanToken(scanner);
+        while (scanner->current < file_len)
+        {
+            scanToken(scanner);
+        }
     }
 
-    //implement EOF token
+    // implement EOF token
     return scanner;
 }
