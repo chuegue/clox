@@ -5,23 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct Scanner_ {
-    char *source;
-    Token *tokens;
-    size_t index_tokens;
-    size_t size_tokens;
-    int start;
-    int current;
-    int line;
-} Scanner;
-
-typedef struct Token_ {
-    TokenType type;
-    char *lexeme;
-    void* literal; //temp line
-    int line;
-} Token;
-
 typedef enum TokenType_
 {
     LEFT_PAREN,
@@ -36,6 +19,23 @@ typedef enum TokenType_
     SLASH,
     STAR,
 } TokenType;
+
+typedef struct Token_ {
+    TokenType type;
+    char *lexeme;
+    void* literal; //temp line
+    int line;
+} Token;
+
+typedef struct Scanner_ {
+    char *source;
+    Token *tokens;
+    size_t index_tokens;
+    size_t size_tokens;
+    int start;
+    int current;
+    int line;
+} Scanner;
 
 Scanner *tokenize(char *file_contents);
 
