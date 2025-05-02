@@ -28,7 +28,7 @@ char advance(Scanner *scanner)
 
 void addToken(Scanner *scanner, TokenType type, void *literal /*temp i guess*/)
 {
-    char *text = calloc(scanner->current - scanner->start + 2);
+    char *text = calloc(scanner->current - scanner->start + 2, sizeof(char));
     strncpy(text, scanner->source + scanner->start, scanner->current - scanner->start);
     if (scanner->index_tokens >= scanner->size_tokens)
     {
