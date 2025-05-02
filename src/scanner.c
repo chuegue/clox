@@ -102,6 +102,19 @@ Scanner *scanToken(char *file_contents)
             case '*':
                 addToken(scanner, STAR, NULL);
                 break;
+            case '/':
+                if (match(scanner, '/'))
+                {
+                    while (scanner->source[scanner->current] != '\n' && scanner->current < strlen(scanner->source))
+                    {
+                        advance(scanner);
+                    }
+                }
+                else
+                {
+                    addToken(scanner, SLASH, NULL);
+                }
+                break;
             case '!':
                 addToken(scanner, match(scanner, '=') ? BANG_EQUAL : BANG, NULL);
                 break;
@@ -189,6 +202,9 @@ char *token_type_to_str(TokenType type)
         break;
     case GREATER_EQUAL:
         text = strdup("GREATER_EQUAL");
+        break;
+    case SLASH:
+        text = strdup("SLASH");
         break;
 
     default:
