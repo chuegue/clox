@@ -133,6 +133,60 @@ void number(Scanner *scanner)
     addToken(scanner, NUMBER, (void *)value);
 }
 
+int isAlpha(char c)
+{
+    return (c >= 'a' && c <= 'z') ||
+           (c >= 'A' && c <= 'Z') ||
+           c == '_';
+}
+
+int isAlphanumeric(char c)
+{
+    return isDigit(c) || isAlpha(c);
+}
+
+Keyword keywords[] = {
+    {"and",    AND},
+    {"class",  CLASS},
+    {"else",   ELSE},
+    {"false",  FALSE},
+    {"for",    FOR},
+    {"fun",    FUN},
+    {"if",     IF},
+    {"nil",    NIL},
+    {"or",     OR},
+    {"print",  PRINT},
+    {"return", RETURN},
+    {"super",  SUPER},
+    {"this",   THIS},
+    {"true",   TRUE},
+    {"var",    VAR},
+    {"while",  WHILE},
+};
+
+const int keywordCount = sizeof(keywords) / sizeof(Keyword);
+
+TokenType get_keyword_type(const char* text) {
+    for (int i = 0; i < keywordCount; i++) {
+        if (strcmp(text, keywords[i].keyword) == 0) {
+            return keywords[i].type;
+        }
+    }
+    return IDENTIFIER;
+}
+
+void identifier(Scanner *scanner)
+{
+    while (isAlphanumeric(peek(scanner)))
+    {
+        advance(scanner);
+    }
+    char *value = calloc(scanner->current - scanner->start + 2, sizeof(char));
+    TokenType type = get_keyword_type(value);
+    strncpy(value, scanner->source + scanner->start, scanner->current - scanner->start - 1);
+    addToken(scanner, type, NULL);
+}
+
 Scanner *scanToken(char *file_contents)
 {
     Scanner *scanner = init_scanner(file_contents);
@@ -223,6 +277,10 @@ Scanner *scanToken(char *file_contents)
                 {
                     number(scanner);
                 }
+                else if (isAlpha(c))
+                {
+                    identifier(scanner);
+                }
                 else
                 {
                     fprintf(stderr, "Unexpected char: %s\n", c);
@@ -301,6 +359,9 @@ char *token_type_to_str(TokenType type)
         break;
     case NUMBER:
         text = strdup("NUMBER");
+        break;
+    case IDENTIFIER:
+        text = strdup("IDENTIFIER");
         break;
 
     default:

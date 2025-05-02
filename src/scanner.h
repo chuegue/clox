@@ -28,7 +28,29 @@ typedef enum TokenType_
     GREATER_EQUAL,
     STRING,
     NUMBER,
+    IDENTIFIER,
+    AND,
+    CLASS,
+    ELSE,
+    FALSE,
+    FOR,
+    FUN,
+    IF,
+    NIL,
+    OR,
+    PRINT,
+    RETURN,
+    SUPER,
+    THIS,
+    TRUE,
+    VAR,
+    WHILE,
 } TokenType;
+
+typedef struct {
+    const char* keyword;
+    TokenType type;
+} Keyword;
 
 typedef struct Token_
 {

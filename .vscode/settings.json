@@ -3,5 +3,6 @@
         "stdio.h": "c",
         "scanner.h": "c",
         "stdlib.h": "c"
-    }
+    },
+    "vim.vimrc.enable": true
 }
