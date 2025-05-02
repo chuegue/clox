@@ -6,7 +6,7 @@ Scanner *init_scanner(char *file_contents)
     scanner->source = strdup(file_contents);
     scanner->tokens = (Token *)calloc(128, sizeof(Token));
     scanner->size_tokens = 128;
-    scanner->start = scanner->current = scanner->number_tokens = 0;
+    scanner->start = scanner->current = scanner->number_tokens = scanner->had_error = 0;
     scanner->line = 1;
     return scanner;
 }
@@ -91,6 +91,13 @@ Scanner *scanToken(char *file_contents)
                 break;
             case '*':
                 addToken(scanner, STAR, NULL);
+                break;
+            case '#':
+            case '$':
+            case '@':
+            case '%':
+                fprintf(stderr, "[line 1] Error: Unexpected character: %c\n", c);
+                scanner->had_error = 1;
                 break;
 
             default:

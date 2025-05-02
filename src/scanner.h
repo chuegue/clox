@@ -35,6 +35,7 @@ typedef struct Scanner_ {
     int start;
     int current;
     int line;
+    int had_error;
 } Scanner;
 
 Scanner *scanToken(char *file_contents);

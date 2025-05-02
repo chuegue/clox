@@ -6,6 +6,7 @@
 
 char *read_file_contents(const char *filename);
 int main(int argc, char *argv[]) {
+    int error_code = 0;
     // Disable output buffering
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
@@ -28,7 +29,7 @@ int main(int argc, char *argv[]) {
             printf("%s %s null\n", token_type_to_str(scanner->tokens[i].type), scanner->tokens[i].lexeme);
         }
         printf("EOF  null\n");
-        
+        if (scanner->had_error == 1) error_code = 65;
         free(file_contents);
         free(scanner);
     } else {
@@ -36,7 +37,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    return 0;
+    return error_code;
 }
 
 
