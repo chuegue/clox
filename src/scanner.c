@@ -74,6 +74,24 @@ Scanner *scanToken(char *file_contents)
             case '}':
                 addToken(scanner, RIGHT_BRACE, NULL);
                 break;
+            case ',':
+                addToken(scanner, COMMA, NULL);
+                break;
+            case '.':
+                addToken(scanner, DOT, NULL);
+                break;
+            case '-':
+                addToken(scanner, MINUS, NULL);
+                break;
+            case '+':
+                addToken(scanner, PLUS, NULL);
+                break;
+            case ';':
+                addToken(scanner, SEMICOLON, NULL);
+                break;
+            case '*':
+                addToken(scanner, STAR, NULL);
+                break;
 
             default:
                 fprintf(stderr, "Unexpected char: %s\n", c);
@@ -101,6 +119,25 @@ char *token_type_to_str(TokenType type)
     case RIGHT_BRACE:
         text = strdup("RIGHT_BRACE");
         break;
+    case COMMA:
+        text = strdup("COMMA");
+        break;
+    case DOT:
+        text = strdup("DOT");
+        break;
+    case MINUS:
+        text = strdup("MINUS");
+        break;
+    case PLUS:
+        text = strdup("PLUS");
+        break;
+    case SEMICOLON:
+        text = strdup("SEMICOLON");
+        break;
+    case STAR:
+        text = strdup("STAR");
+        break;
+
     default:
         text = strdup("NOT_IMPLEMENTED");
         break;
