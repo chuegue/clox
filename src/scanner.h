@@ -18,16 +18,26 @@ typedef enum TokenType_
     SEMICOLON,
     SLASH,
     STAR,
+    BANG,
+    BANG_EQUAL,
+    EQUAL,
+    EQUAL_EQUAL,
+    LESS,
+    LESS_EQUAL,
+    GREATER,
+    GREATER_EQUAL,
 } TokenType;
 
-typedef struct Token_ {
+typedef struct Token_
+{
     TokenType type;
     char *lexeme;
-    void* literal; //temp line
+    void *literal; // temp line
     int line;
 } Token;
 
-typedef struct Scanner_ {
+typedef struct Scanner_
+{
     char *source;
     Token *tokens;
     size_t number_tokens;

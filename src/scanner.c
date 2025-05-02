@@ -50,6 +50,16 @@ void addToken(Scanner *scanner, TokenType type, void *literal /*temp i guess*/)
     memcpy(&(scanner->tokens[scanner->number_tokens++]), init_token(type, text, literal, scanner->line), sizeof(Token));
 }
 
+int match(Scanner *scanner, char expected)
+{
+    if (scanner->current >= strlen(scanner->source))
+        return 0;
+    if (scanner->source[scanner->current] != expected)
+        return 0;
+    scanner->current++;
+    return 1;
+}
+
 Scanner *scanToken(char *file_contents)
 {
     Scanner *scanner = init_scanner(file_contents);
@@ -91,6 +101,18 @@ Scanner *scanToken(char *file_contents)
                 break;
             case '*':
                 addToken(scanner, STAR, NULL);
+                break;
+            case '!':
+                addToken(scanner, match(scanner, '=') ? BANG_EQUAL : BANG, NULL);
+                break;
+            case '=':
+                addToken(scanner, match(scanner, '=') ? EQUAL_EQUAL : EQUAL, NULL);
+                break;
+            case '<':
+                addToken(scanner, match(scanner, '=') ? LESS_EQUAL : LESS, NULL);
+                break;
+            case '>':
+                addToken(scanner, match(scanner, '=') ? GREATER_EQUAL : GREATER, NULL);
                 break;
             case '#':
             case '$':
@@ -143,6 +165,30 @@ char *token_type_to_str(TokenType type)
         break;
     case STAR:
         text = strdup("STAR");
+        break;
+    case BANG:
+        text = strdup("BANG");
+        break;
+    case BANG_EQUAL:
+        text = strdup("BANG_EQUAL");
+        break;
+    case EQUAL:
+        text = strdup("EQUAL");
+        break;
+    case EQUAL_EQUAL:
+        text = strdup("EQUAL_EQUAL");
+        break;
+    case LESS:
+        text = strdup("LESS");
+        break;
+    case LESS_EQUAL:
+        text = strdup("LESS_EQUAL");
+        break;
+    case GREATER:
+        text = strdup("GREATER");
+        break;
+    case GREATER_EQUAL:
+        text = strdup("GREATER_EQUAL");
         break;
 
     default:
