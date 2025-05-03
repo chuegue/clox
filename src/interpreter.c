@@ -81,6 +81,16 @@ int isEqual(Literal *a, Literal *b)
     return 0;
 }
 
+void checkNumberOperands(Expression *expr)
+{
+    if (expr->as.binary.left->as.literal.token_type == NUMBER && expr->as.binary.right->as.literal.token_type == NUMBER)
+    {
+        return;
+    }
+    fprintf(stderr, "Operands must be numbers.\n");
+    *error_code = 70;
+}
+
 Literal *visitBinaryExpr(Expression *expr)
 {
     Literal *left = evaluate(expr->as.binary.left, error_code);
@@ -89,22 +99,47 @@ Literal *visitBinaryExpr(Expression *expr)
     switch (expr->as.binary.operator->type)
     {
     case GREATER:
+        checkNumberOperands(expr);
+        if (*error_code == 70)
+        {
+            return NULL;
+        }
         ret->data.bool_val = *(left->data.number) > *(right->data.number);
         ret->token_type = ret->data.bool_val == 1 ? TRUE : FALSE;
         return ret;
     case GREATER_EQUAL:
+        checkNumberOperands(expr);
+        if (*error_code == 70)
+        {
+            return NULL;
+        }
         ret->data.bool_val = *(left->data.number) >= *(right->data.number);
         ret->token_type = ret->data.bool_val == 1 ? TRUE : FALSE;
         return ret;
     case LESS:
+        checkNumberOperands(expr);
+        if (*error_code == 70)
+        {
+            return NULL;
+        }
         ret->data.bool_val = *(left->data.number) < *(right->data.number);
         ret->token_type = ret->data.bool_val == 1 ? TRUE : FALSE;
         return ret;
     case LESS_EQUAL:
+        checkNumberOperands(expr);
+        if (*error_code == 70)
+        {
+            return NULL;
+        }
         ret->data.bool_val = *(left->data.number) <= *(right->data.number);
         ret->token_type = ret->data.bool_val == 1 ? TRUE : FALSE;
         return ret;
     case EQUAL_EQUAL:
+        checkNumberOperands(expr);
+        if (*error_code == 70)
+        {
+            return NULL;
+        }
         ret->data.bool_val = isEqual(left, right);
         ret->token_type = ret->data.bool_val == 1 ? TRUE : FALSE;
         return ret;
@@ -115,6 +150,11 @@ Literal *visitBinaryExpr(Expression *expr)
         return ret;
         break;
     case MINUS:
+        checkNumberOperands(expr);
+        if (*error_code == 70)
+        {
+            return NULL;
+        }
         ret->token_type = NUMBER;
         ret->data.number = calloc(1, sizeof(double));
         *(ret->data.number) = *(left->data.number) - *(right->data.number);
@@ -123,6 +163,11 @@ Literal *visitBinaryExpr(Expression *expr)
     case PLUS:
         if (left->token_type == NUMBER && right->token_type == NUMBER)
         {
+            checkNumberOperands(expr);
+            if (*error_code == 70)
+            {
+                return NULL;
+            }
             ret->token_type = NUMBER;
             ret->data.number = calloc(1, sizeof(double));
             *(ret->data.number) = *(left->data.number) + *(right->data.number);
@@ -138,12 +183,22 @@ Literal *visitBinaryExpr(Expression *expr)
         }
         break;
     case SLASH:
+        checkNumberOperands(expr);
+        if (*error_code == 70)
+        {
+            return NULL;
+        }
         ret->token_type = NUMBER;
         ret->data.number = calloc(1, sizeof(double));
         *(ret->data.number) = *(left->data.number) / *(right->data.number);
         return ret;
         break;
     case STAR:
+        checkNumberOperands(expr);
+        if (*error_code == 70)
+        {
+            return NULL;
+        }
         ret->token_type = NUMBER;
         ret->data.number = calloc(1, sizeof(double));
         *(ret->data.number) = *(left->data.number) * *(right->data.number);
