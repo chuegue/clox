@@ -135,11 +135,6 @@ Literal *visitBinaryExpr(Expression *expr)
         ret->token_type = ret->data.bool_val == 1 ? TRUE : FALSE;
         return ret;
     case EQUAL_EQUAL:
-        checkNumberOperands(expr);
-        if (*error_code == 70)
-        {
-            return NULL;
-        }
         ret->data.bool_val = isEqual(left, right);
         ret->token_type = ret->data.bool_val == 1 ? TRUE : FALSE;
         return ret;
