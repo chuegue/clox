@@ -155,7 +155,7 @@ Literal *evaluate(Expression *expr)
         return visitLiteralExpr(expr);
         break;
     case EXPR_BINARY:
-        return visitLiteralExpr(expr);
+        return visitBinaryExpr(expr);
         break;
     case EXPR_GROUPING:
         return visitGroupingExpr(expr->as.binary.left);
