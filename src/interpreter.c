@@ -155,13 +155,13 @@ Literal *evaluate(Expression *expr)
         return visitLiteralExpr(expr);
         break;
     case EXPR_BINARY:
-        /*todo*/
+        return visitLiteralExpr(expr);
         break;
     case EXPR_GROUPING:
         return visitGroupingExpr(expr->as.binary.left);
         break;
     case EXPR_UNARY:
-        /*todo*/
+        return visitUnaryExpr(expr);
         break;
 
     default:

@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_DEFINES = 
 
-C_INCLUDES = 
+C_INCLUDES = -I/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src
 
-C_FLAGS = -g -g -O0 -std=gnu2x
+C_FLAGS = -std=gnu2x
 

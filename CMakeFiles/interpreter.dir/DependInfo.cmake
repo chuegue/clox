@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/interpreter.c" "CMakeFiles/interpreter.dir/src/interpreter.c.o" "gcc" "CMakeFiles/interpreter.dir/src/interpreter.c.o.d"
   "/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/main.c" "CMakeFiles/interpreter.dir/src/main.c.o" "gcc" "CMakeFiles/interpreter.dir/src/main.c.o.d"
   "/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/parser.c" "CMakeFiles/interpreter.dir/src/parser.c.o" "gcc" "CMakeFiles/interpreter.dir/src/parser.c.o.d"
   "/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/scanner.c" "CMakeFiles/interpreter.dir/src/scanner.c.o" "gcc" "CMakeFiles/interpreter.dir/src/scanner.c.o.d"

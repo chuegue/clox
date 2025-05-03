@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/interpreter.dir/src/interpreter.c.o"
+  "CMakeFiles/interpreter.dir/src/interpreter.c.o.d"
   "CMakeFiles/interpreter.dir/src/main.c.o"
   "CMakeFiles/interpreter.dir/src/main.c.o.d"
   "CMakeFiles/interpreter.dir/src/parser.c.o"

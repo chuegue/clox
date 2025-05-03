@@ -69,10 +69,24 @@ include CMakeFiles/interpreter.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/interpreter.dir/flags.make
 
+CMakeFiles/interpreter.dir/src/interpreter.c.o: CMakeFiles/interpreter.dir/flags.make
+CMakeFiles/interpreter.dir/src/interpreter.c.o: src/interpreter.c
+CMakeFiles/interpreter.dir/src/interpreter.c.o: CMakeFiles/interpreter.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/interpreter.dir/src/interpreter.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/interpreter.dir/src/interpreter.c.o -MF CMakeFiles/interpreter.dir/src/interpreter.c.o.d -o CMakeFiles/interpreter.dir/src/interpreter.c.o -c /home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/interpreter.c
+
+CMakeFiles/interpreter.dir/src/interpreter.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/interpreter.dir/src/interpreter.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/interpreter.c > CMakeFiles/interpreter.dir/src/interpreter.c.i
+
+CMakeFiles/interpreter.dir/src/interpreter.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/interpreter.dir/src/interpreter.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/interpreter.c -o CMakeFiles/interpreter.dir/src/interpreter.c.s
+
 CMakeFiles/interpreter.dir/src/main.c.o: CMakeFiles/interpreter.dir/flags.make
 CMakeFiles/interpreter.dir/src/main.c.o: src/main.c
 CMakeFiles/interpreter.dir/src/main.c.o: CMakeFiles/interpreter.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/interpreter.dir/src/main.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/interpreter.dir/src/main.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/interpreter.dir/src/main.c.o -MF CMakeFiles/interpreter.dir/src/main.c.o.d -o CMakeFiles/interpreter.dir/src/main.c.o -c /home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/main.c
 
 CMakeFiles/interpreter.dir/src/main.c.i: cmake_force
@@ -86,7 +100,7 @@ CMakeFiles/interpreter.dir/src/main.c.s: cmake_force
 CMakeFiles/interpreter.dir/src/parser.c.o: CMakeFiles/interpreter.dir/flags.make
 CMakeFiles/interpreter.dir/src/parser.c.o: src/parser.c
 CMakeFiles/interpreter.dir/src/parser.c.o: CMakeFiles/interpreter.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/interpreter.dir/src/parser.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/interpreter.dir/src/parser.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/interpreter.dir/src/parser.c.o -MF CMakeFiles/interpreter.dir/src/parser.c.o.d -o CMakeFiles/interpreter.dir/src/parser.c.o -c /home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/parser.c
 
 CMakeFiles/interpreter.dir/src/parser.c.i: cmake_force
@@ -100,7 +114,7 @@ CMakeFiles/interpreter.dir/src/parser.c.s: cmake_force
 CMakeFiles/interpreter.dir/src/scanner.c.o: CMakeFiles/interpreter.dir/flags.make
 CMakeFiles/interpreter.dir/src/scanner.c.o: src/scanner.c
 CMakeFiles/interpreter.dir/src/scanner.c.o: CMakeFiles/interpreter.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/interpreter.dir/src/scanner.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/interpreter.dir/src/scanner.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/interpreter.dir/src/scanner.c.o -MF CMakeFiles/interpreter.dir/src/scanner.c.o.d -o CMakeFiles/interpreter.dir/src/scanner.c.o -c /home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/scanner.c
 
 CMakeFiles/interpreter.dir/src/scanner.c.i: cmake_force
@@ -113,6 +127,7 @@ CMakeFiles/interpreter.dir/src/scanner.c.s: cmake_force
 
 # Object files for target interpreter
 interpreter_OBJECTS = \
+"CMakeFiles/interpreter.dir/src/interpreter.c.o" \
 "CMakeFiles/interpreter.dir/src/main.c.o" \
 "CMakeFiles/interpreter.dir/src/parser.c.o" \
 "CMakeFiles/interpreter.dir/src/scanner.c.o"
@@ -120,12 +135,13 @@ interpreter_OBJECTS = \
 # External object files for target interpreter
 interpreter_EXTERNAL_OBJECTS =
 
+interpreter: CMakeFiles/interpreter.dir/src/interpreter.c.o
 interpreter: CMakeFiles/interpreter.dir/src/main.c.o
 interpreter: CMakeFiles/interpreter.dir/src/parser.c.o
 interpreter: CMakeFiles/interpreter.dir/src/scanner.c.o
 interpreter: CMakeFiles/interpreter.dir/build.make
 interpreter: CMakeFiles/interpreter.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking C executable interpreter"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking C executable interpreter"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/interpreter.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
