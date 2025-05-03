@@ -178,9 +178,10 @@ Expression *primary(Parser *parser)
     if (match_parser(parser, allowed_tokens, 1))
     {
         Expression *expr = expression(parser);
-        // literal ^^^
         // fprintf(stderr, "%s\n", expr->as.literal.data.string);
         consume(parser, RIGHT_PAREN, "Expect ')' after expression.");
+
+        fprintf(stderr, "Wrapping in group\n");
         return init_expression_binary(expr, NULL, NULL, EXPR_GROUPING);
     }
     consume(parser, EOF_LOX, "Expect expression.");
@@ -266,10 +267,9 @@ Expression *parse(Parser *parser, int *error_return)
     return tree;
 }
 
-char *parenthesize(char *name, Expression *expression)
+void parenthesize(char *name, Expression *expression)
 {
     char *builder = calloc(512, sizeof(char));
-    sprintf(builder, "(%s ", name);
     char temp[512] = {0};
     if (expression->type == EXPR_LITERAL)
     {
@@ -280,44 +280,42 @@ char *parenthesize(char *name, Expression *expression)
             double number = *expression->as.literal.data.number;
             if (floor(number) == number)
             { // integer
-                sprintf(temp, "%.1lf)", number);
-                strcpy(builder + strlen(builder), temp);
+                printf("(%s %.1lf)", name, number);
             }
             else
-            { // floatvoid print_expression(Expression *expr)
-                sprintf(temp, "%.15g)", number);
-                strcpy(builder + strlen(builder), temp);
+            { // float
+                printf("(%s %.15g)", name, number);
             }
             break;
         case STRING:
-            sprintf(temp, "%s)", expression->as.literal.data.string);
-            strcpy(builder + strlen(builder), temp);
+            printf("(%s %s)", name, expression->as.literal.data.string);
             break;
         case TRUE:
-            sprintf(temp, "true)");
-            strcpy(builder + strlen(builder), temp);
+            printf("(%s true)", name);
             break;
         case FALSE:
-            sprintf(temp, "false)");
-            strcpy(builder + strlen(builder), temp);
+            printf("(%s false)", name);
             break;
         case NIL:
-            sprintf(temp, "nil)");
-            strcpy(builder + strlen(builder), temp);
+            printf("(%s nil)", name);
             break;
         default:
-            sprintf(temp, "<unknown literal> ");
-            strcpy(builder + strlen(builder), temp);
+            printf("(<unknown literal> ");
             break;
         }
-    }else if(expression->type == EXPR_GROUPING){
-        printf("%s", builder);
-        print_expression(expression->as.binary.left);
-        printf(")");
-        builder[0] = '\0';
     }
-    fprintf(stderr, "HERE %s\n", builder);
-    return builder;
+    else if (expression->type == EXPR_GROUPING)
+    {
+        printf("(%s ", name);
+        print_expression(expression);
+        printf(")");
+    }
+    else if (expression->type == EXPR_UNARY)
+    {
+        printf("(%s ", name);
+        print_expression(expression);
+        printf(")");
+    }
 }
 
 void print_expression(Expression *expr)
@@ -373,12 +371,10 @@ void print_expression(Expression *expr)
         break;
     }
     case EXPR_GROUPING:
-        str = parenthesize("group", expr);
-        printf("%s", str);
+        parenthesize("group", expr->as.binary.left);
         break;
     case EXPR_UNARY:
-        str = parenthesize(expr->as.binary.operator->lexeme, expr->as.binary.right);
-        printf("%s", str);
+        parenthesize(expr->as.binary.operator->lexeme, expr->as.binary.right);
         break;
 
     default:

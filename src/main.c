@@ -104,6 +104,34 @@ int main(int argc, char *argv[])
         char *file_contents = read_file_contents(argv[2]);
 
         Scanner *scanner = scanToken(file_contents);
+        #if 0
+        fprintf(stderr, "---------------Number of tokens = %zu---------------\n", scanner->number_tokens);
+        for (size_t i = 0; i < scanner->number_tokens; i++)
+        {
+            Token token = scanner->tokens[i];
+            if (token.literal == NULL)
+            {
+                fprintf(stderr, "%s %s null\n", token_type_to_str(token.type), token.lexeme);
+            }
+            else if (token.type == STRING)
+            {
+                fprintf(stderr, "%s %s %s\n", token_type_to_str(token.type), token.lexeme, (char *)token.literal);
+            }
+            else if (token.type == NUMBER)
+            {
+                double number = *(double *)token.literal;
+                if (floor(number) == number)
+                { // integer
+                    fprintf(stderr, "%s %s %.1lf\n", token_type_to_str(token.type), token.lexeme, *(double *)token.literal);
+                }
+                else
+                { // floatvoid print_expression(Expression *expr)
+                    fprintf(stderr, "%s %s %.15g\n", token_type_to_str(token.type), token.lexeme, *(double *)token.literal);
+                }
+            }
+        }
+        fprintf(stderr, "------------------------------------------------------------\n");
+        #endif
         Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);
         int dummy;
         Expression *expression = parse(parser, &dummy);
