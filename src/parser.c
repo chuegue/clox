@@ -83,12 +83,12 @@ int match_parser(Parser *parser, TokenType types[], size_t len_types)
 
 Token *consume(Parser *parser, TokenType type, char message[])
 {
-    error_return_global = 65;
     if (check(parser, type))
     {
         return advance_parser(parser);
     }
     fprintf(stderr, "%s", message);
+    error_return_global = 65;
     if (type == EOF_LOX)
     {
         fprintf(stderr, "Line %d at end. %s", peek_parser(parser)->line, message);
@@ -178,8 +178,10 @@ Expression *primary(Parser *parser)
     if (match_parser(parser, allowed_tokens, 1))
     {
         Expression *expr = expression(parser);
+        // literal ^^^
+        // fprintf(stderr, "%s\n", expr->as.literal.data.string);
         consume(parser, RIGHT_PAREN, "Expect ')' after expression.");
-        return expr;
+        return init_expression_binary(expr, NULL, NULL, EXPR_GROUPING);
     }
     consume(parser, EOF_LOX, "Expect expression.");
 }
@@ -193,7 +195,7 @@ Expression *unary(Parser *parser)
     {
         Token *operator = previous(parser);
         Expression *right = unary(parser);
-        return init_expression_binary(NULL, operator, right, EXPR_BINARY);
+        return init_expression_binary(NULL, operator, right, EXPR_UNARY);
     }
     return primary(parser);
 }
@@ -264,6 +266,60 @@ Expression *parse(Parser *parser, int *error_return)
     return tree;
 }
 
+char *parenthesize(char *name, Expression *expression)
+{
+    char *builder = calloc(512, sizeof(char));
+    sprintf(builder, "(%s ", name);
+    char temp[512] = {0};
+    if (expression->type == EXPR_LITERAL)
+    {
+        TokenType type = expression->as.literal.token_type;
+        switch (type)
+        {
+        case NUMBER:
+            double number = *expression->as.literal.data.number;
+            if (floor(number) == number)
+            { // integer
+                sprintf(temp, "%.1lf)", number);
+                strcpy(builder + strlen(builder), temp);
+            }
+            else
+            { // floatvoid print_expression(Expression *expr)
+                sprintf(temp, "%.15g)", number);
+                strcpy(builder + strlen(builder), temp);
+            }
+            break;
+        case STRING:
+            sprintf(temp, "%s)", expression->as.literal.data.string);
+            strcpy(builder + strlen(builder), temp);
+            break;
+        case TRUE:
+            sprintf(temp, "true)");
+            strcpy(builder + strlen(builder), temp);
+            break;
+        case FALSE:
+            sprintf(temp, "false)");
+            strcpy(builder + strlen(builder), temp);
+            break;
+        case NIL:
+            sprintf(temp, "nil)");
+            strcpy(builder + strlen(builder), temp);
+            break;
+        default:
+            sprintf(temp, "<unknown literal> ");
+            strcpy(builder + strlen(builder), temp);
+            break;
+        }
+    }else if(expression->type == EXPR_GROUPING){
+        printf("%s", builder);
+        print_expression(expression->as.binary.left);
+        printf(")");
+        builder[0] = '\0';
+    }
+    fprintf(stderr, "HERE %s\n", builder);
+    return builder;
+}
+
 void print_expression(Expression *expr)
 {
     if (expr == NULL)
@@ -271,6 +327,7 @@ void print_expression(Expression *expr)
         return;
     }
 
+    char *str;
     switch (expr->type)
     {
     case EXPR_BINARY:
@@ -315,6 +372,14 @@ void print_expression(Expression *expr)
         }
         break;
     }
+    case EXPR_GROUPING:
+        str = parenthesize("group", expr);
+        printf("%s", str);
+        break;
+    case EXPR_UNARY:
+        str = parenthesize(expr->as.binary.operator->lexeme, expr->as.binary.right);
+        printf("%s", str);
+        break;
 
     default:
         printf("<unknown expr> ");

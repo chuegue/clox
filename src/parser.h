@@ -24,7 +24,9 @@ typedef struct {
 
 typedef enum {
     EXPR_LITERAL,
-    EXPR_BINARY
+    EXPR_BINARY,
+    EXPR_GROUPING,
+    EXPR_UNARY
 } ExpressionType;
 
 struct Expression_
