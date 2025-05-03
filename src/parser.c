@@ -87,7 +87,7 @@ Token *consume(Parser *parser, TokenType type, char message[])
     {
         return advance_parser(parser);
     }
-    //fprintf(stderr, "[ERROR] consume() triggered: %s\n", message);
+    // fprintf(stderr, "[ERROR] consume() triggered: %s\n", message);
     error_return_global = 65;
     if (type == EOF_LOX)
     {
@@ -182,7 +182,7 @@ Expression *primary(Parser *parser)
         // fprintf(stderr, "%s\n", expr->as.literal.data.string);
         consume(parser, RIGHT_PAREN, "Expect ')' after expression.");
 
-        //fprintf(stderr, "Wrapping in group\n");
+        // fprintf(stderr, "Wrapping in group\n");
         return init_expression_binary(expr, NULL, NULL, EXPR_GROUPING);
     }
     consume(parser, EOF_LOX, "Expect expression.");
@@ -375,8 +375,8 @@ void print_expression(Expression *expr)
         }
         break;
     // case EXPR_GROUPING:
-        // parenthesize("group", expr->as.binary.left);
-        // break;
+    // parenthesize("group", expr->as.binary.left);
+    // break;
     case EXPR_GROUPING:
         printf("(group ");
         print_expression(expr->as.binary.left); // Directly print inner expression
@@ -392,18 +392,33 @@ void print_expression(Expression *expr)
     }
 }
 
-void print_literal(Literal *literal){
-    switch(literal->token_type){
-        case TRUE:
-            printf("true");
-            break;
-        case FALSE:
-            printf("false");
-            break;
-        case NIL:
-            printf("nil");
-            break;
-        default:
-            fprintf(stderr, "print_literal for type %s not implemented yet\n", token_type_to_str(literal->token_type));
+void print_literal(Literal *literal)
+{
+    switch (literal->token_type)
+    {
+    case TRUE:
+        printf("true");
+        break;
+    case FALSE:
+        printf("false");
+        break;
+    case NIL:
+        printf("nil");
+        break;
+    case NUMBER:
+        if (floor(*literal->data.number) == *literal->data.number)
+        {
+            printf("%.0lf\n", *literal->data.number);
+        }
+        else
+        {
+            printf("%.15g\n", *literal->data.number);
+        }
+        break;
+    case STRING:
+        printf("%s\n", literal->data.string);
+        break;
+    default:
+        fprintf(stderr, "print_literal for type %s not implemented yet\n", token_type_to_str(literal->token_type));
     }
 }
