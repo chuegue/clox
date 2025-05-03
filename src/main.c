@@ -134,16 +134,12 @@ int main(int argc, char *argv[])
         #endif
         Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);
         int dummy;
-        Expression *expression = parse(parser, &dummy);
-        // if (error_code == 65)
-        // {
-        //     return error_code;
-        // }
+        Expression *expression = parse(parser, &error_code);
         print_expression(expression);
-        // if (scanner->had_error == 1)
-        // {
-        //     error_code = 65;
-        // }
+        if (scanner->had_error == 1)
+        {
+            error_code = 65;
+        }
         free(file_contents);
         free_scanner(scanner);
     }
