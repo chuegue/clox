@@ -41,7 +41,7 @@ char advance(Scanner *scanner)
     return scanner->source[scanner->current++];
 }
 
-void addToken(Scanner *scanner, TokenType type, void *literal /*temp i guess*/)
+void addToken(Scanner *scanner, TokenType type, void *literal)
 {
     char *text = calloc(scanner->current - scanner->start + 2, sizeof(char));
     strncpy(text, scanner->source + scanner->start, scanner->current - scanner->start);
@@ -275,6 +275,10 @@ Scanner *scanToken(char *file_contents)
             case '\n':
                 scanner->line++;
                 break;
+            case EOF:
+                addToken(scanner, EOF_LOX, NULL);
+                return scanner;
+                break;
             default:
                 if (isDigit(c))
                 {
@@ -290,7 +294,6 @@ Scanner *scanToken(char *file_contents)
                 }
             }
         }
-        // implement EOF token
     }
     return scanner;
 }

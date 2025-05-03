@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
         char *file_contents = read_file_contents(argv[2]);
 
         Scanner *scanner = scanToken(file_contents);
-        #if 0
+#if 1
         fprintf(stderr, "---------------Number of tokens = %zu---------------\n", scanner->number_tokens);
         for (size_t i = 0; i < scanner->number_tokens; i++)
         {
@@ -131,11 +131,17 @@ int main(int argc, char *argv[])
             }
         }
         fprintf(stderr, "------------------------------------------------------------\n");
-        #endif
-        Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);
-        int dummy;
-        Expression *expression = parse(parser, &error_code);
-        print_expression(expression);
+#endif
+        if (scanner->number_tokens > 0)
+        {
+            Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);
+            Expression *expression = parse(parser, &error_code);
+            if (error_code == 0)
+            {
+                print_expression(expression);
+            }
+            printf("\n");
+        }
         if (scanner->had_error == 1)
         {
             error_code = 65;
@@ -149,5 +155,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // fprintf(stderr, "Exit code: %d\n", error_code);
     return error_code;
 }

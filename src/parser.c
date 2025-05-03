@@ -87,7 +87,7 @@ Token *consume(Parser *parser, TokenType type, char message[])
     {
         return advance_parser(parser);
     }
-    fprintf(stderr, "%s", message);
+    //fprintf(stderr, "[ERROR] consume() triggered: %s\n", message);
     error_return_global = 65;
     if (type == EOF_LOX)
     {
@@ -97,6 +97,7 @@ Token *consume(Parser *parser, TokenType type, char message[])
     {
         fprintf(stderr, "Line %d at '%s'. %s", peek_parser(parser)->line, peek_parser(parser)->lexeme, message);
     }
+    printf("\n");
 }
 
 void synchronize(Parser *parser)
@@ -181,10 +182,11 @@ Expression *primary(Parser *parser)
         // fprintf(stderr, "%s\n", expr->as.literal.data.string);
         consume(parser, RIGHT_PAREN, "Expect ')' after expression.");
 
-        fprintf(stderr, "Wrapping in group\n");
+        //fprintf(stderr, "Wrapping in group\n");
         return init_expression_binary(expr, NULL, NULL, EXPR_GROUPING);
     }
     consume(parser, EOF_LOX, "Expect expression.");
+    return NULL;
 }
 
 // unary          → ( "!" | "-" ) unary
