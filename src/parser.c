@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "scanner.h"
 #include "parser.h"
 
@@ -158,6 +160,7 @@ Expression *primary(Parser *parser)
         Token *prev = previous(parser);
         double *prev_literal = (double *)prev->literal;
         expression_literal->as.literal.data.number = prev_literal;
+        expression_literal->as.literal.token_type = NUMBER;
         expression_literal->type = EXPR_LITERAL;
         return expression_literal;
     }
@@ -167,6 +170,7 @@ Expression *primary(Parser *parser)
         Token *prev = previous(parser);
         char *prev_literal = (char *)prev->literal;
         expression_literal->as.literal.data.string = prev_literal;
+        expression_literal->as.literal.token_type = STRING;
         expression_literal->type = EXPR_LITERAL;
         return expression_literal;
     }
@@ -286,11 +290,11 @@ void print_expression(Expression *expr)
             double number = *expr->as.literal.data.number;
             if (floor(number) == number)
             { // integer
-                printf("%.1lf ", number);
+                printf("%.1lf", number);
             }
             else
             { // floatvoid print_expression(Expression *expr)
-                printf("%.15g ", number);
+                printf("%.15g", number);
             }
             break;
         case STRING:
