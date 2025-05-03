@@ -41,9 +41,11 @@ Literal *visitUnaryExpr(Expression *expr)
         return ret;
         break;
     case MINUS:
-        if(right->token_type != NUMBER){
+        if (right->token_type != NUMBER)
+        {
             fprintf(stderr, "Operand must be a number.\n");
             *error_code = 70;
+            break;
         }
         *right->data.number *= -1;
         return right;
