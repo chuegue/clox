@@ -298,14 +298,7 @@ void print_expression(Expression *expr)
             }
             break;
         case STRING:
-            if (expr->as.literal.data.string != NULL)
-            {
-                printf("\"%s\" ", expr->as.literal.data.string);
-            }
-            else
-            {
-                printf("\"\" ");
-            }
+            printf("%s", expr->as.literal.data.string);
             break;
         case TRUE:
             printf("true");
