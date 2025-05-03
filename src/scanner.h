@@ -45,6 +45,7 @@ typedef enum TokenType_
     TRUE,
     VAR,
     WHILE,
+    EOF_LOX,
 } TokenType;
 
 typedef struct {

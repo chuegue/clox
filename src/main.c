@@ -4,71 +4,7 @@
 #include <math.h>
 
 #include "scanner.h"
-
-char *read_file_contents(const char *filename);
-int main(int argc, char *argv[])
-{
-    int error_code = 0;
-    // Disable output buffering
-    setbuf(stdout, NULL);
-    setbuf(stderr, NULL);
-
-    if (argc < 3)
-    {
-        fprintf(stderr, "Usage: ./your_program tokenize <filename>\n");
-        return 1;
-    }
-
-    const char *command = argv[1];
-
-    if (strcmp(command, "tokenize") == 0)
-    {
-        // You can use print statements as follows for debugging, they'll be visible when running tests.
-
-        char *file_contents = read_file_contents(argv[2]);
-
-        Scanner *scanner = scanToken(file_contents);
-        fprintf(stderr, "Number of tokens = %d\n", scanner->number_tokens);
-        for (size_t i = 0; i < scanner->number_tokens; i++)
-        {
-            Token token = scanner->tokens[i];
-            if (token.literal == NULL)
-            {
-                printf("%s %s null\n", token_type_to_str(token.type), token.lexeme);
-            }
-            else if (token.type == STRING)
-            {
-                printf("%s %s %s\n", token_type_to_str(token.type), token.lexeme, token.literal);
-            }
-            else if (token.type == NUMBER)
-            {
-                double number = *(double *)token.literal;
-                if (floor(number) == number)
-                { // integer
-                    printf("%s %s %.1lf\n", token_type_to_str(token.type), token.lexeme, *(double *)token.literal);
-                }
-                else
-                { // float
-                    printf("%s %s %.15g\n", token_type_to_str(token.type), token.lexeme, *(double *)token.literal);
-                }
-            }
-        }
-        printf("EOF  null\n");
-        if (scanner->had_error == 1)
-        {
-            error_code = 65;
-        }
-        free(file_contents);
-        free_scanner(scanner);
-    }
-    else
-    {
-        fprintf(stderr, "Unknown command: %s\n", command);
-        return 1;
-    }
-
-    return error_code;
-}
+#include "parser.h"
 
 char *read_file_contents(const char *filename)
 {
@@ -104,4 +40,89 @@ char *read_file_contents(const char *filename)
     fclose(file);
 
     return file_contents;
+}
+
+int main(int argc, char *argv[])
+{
+    int error_code = 0;
+    // Disable output buffering
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
+
+    if (argc < 3)
+    {
+        fprintf(stderr, "Usage: ./your_program tokenize <filename>\n");
+        return 1;
+    }
+
+    const char *command = argv[1];
+
+    if (strcmp(command, "tokenize") == 0)
+    {
+        // You can use print statements as follows for debugging, they'll be visible when running tests.
+
+        char *file_contents = read_file_contents(argv[2]);
+
+        Scanner *scanner = scanToken(file_contents);
+        fprintf(stderr, "Number of tokens = %zu\n", scanner->number_tokens);
+        for (size_t i = 0; i < scanner->number_tokens; i++)
+        {
+            Token token = scanner->tokens[i];
+            if (token.literal == NULL)
+            {
+                printf("%s %s null\n", token_type_to_str(token.type), token.lexeme);
+            }
+            else if (token.type == STRING)
+            {
+                printf("%s %s %s\n", token_type_to_str(token.type), token.lexeme, (char *)token.literal);
+            }
+            else if (token.type == NUMBER)
+            {
+                double number = *(double *)token.literal;
+                if (floor(number) == number)
+                { // integer
+                    printf("%s %s %.1lf\n", token_type_to_str(token.type), token.lexeme, *(double *)token.literal);
+                }
+                else
+                { // float
+                    printf("%s %s %.15g\n", token_type_to_str(token.type), token.lexeme, *(double *)token.literal);
+                }
+            }
+        }
+        printf("EOF  null\n");
+        if (scanner->had_error == 1)
+        {
+            error_code = 65;
+        }
+        free(file_contents);
+        free_scanner(scanner);
+    }
+    else if (strcmp(command, "parse") == 0)
+    {
+        // You can use print statements as follows for debugging, they'll be visible when running tests.
+
+        char *file_contents = read_file_contents(argv[2]);
+
+        Scanner *scanner = scanToken(file_contents);
+        Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);
+        Expression *expression = parse(parser, &error_code);
+        if (error_code == 65)
+        {
+            return error_code;
+        }
+        print_expression(expression);
+        if (scanner->had_error == 1)
+        {
+            error_code = 65;
+        }
+        free(file_contents);
+        free_scanner(scanner);
+    }
+    else
+    {
+        fprintf(stderr, "Unknown command: %s\n", command);
+        return 1;
+    }
+
+    return error_code;
 }

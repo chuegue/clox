@@ -168,7 +168,6 @@ const int keywordCount = sizeof(keywords) / sizeof(Keyword);
 
 TokenType get_keyword_type(const char *text)
 {
-    fprintf(stderr, "%s\n", text);
     for (int i = 0; i < keywordCount; i++)
     {
         if (strcmp(text, keywords[i].keyword) == 0)
@@ -287,7 +286,7 @@ Scanner *scanToken(char *file_contents)
                 }
                 else
                 {
-                    fprintf(stderr, "Unexpected char: %s\n", c);
+                    fprintf(stderr, "Unexpected char: %c\n", c);
                 }
             }
         }

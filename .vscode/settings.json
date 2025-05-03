@@ -2,7 +2,14 @@
     "files.associations": {
         "stdio.h": "c",
         "scanner.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "bit": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "type_traits": "cpp",
+        "cmath": "cpp",
+        "limits": "cpp",
+        "new": "cpp"
     },
     "vim.vimrc.enable": true
 }
