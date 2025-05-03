@@ -316,6 +316,14 @@ void parenthesize(char *name, Expression *expression)
         print_expression(expression);
         printf(")");
     }
+    else if (expression->type == EXPR_BINARY)
+    {
+        printf("(%s ", name);
+        print_expression(expression->as.binary.left);
+        printf(" ");
+        print_expression(expression->as.binary.right);
+        printf(")");
+    }
 }
 
 void print_expression(Expression *expr)
@@ -329,15 +337,10 @@ void print_expression(Expression *expr)
     switch (expr->type)
     {
     case EXPR_BINARY:
-    {
-        print_expression(expr->as.binary.left);
-        print_expression(expr->as.binary.right);
-        printf("%s ", expr->as.binary.operator->lexeme);
+        parenthesize(expr->as.binary.operator->lexeme, expr);
         break;
-    }
 
     case EXPR_LITERAL:
-    {
         TokenType type = expr->as.literal.token_type;
         switch (type)
         {
@@ -369,9 +372,13 @@ void print_expression(Expression *expr)
             break;
         }
         break;
-    }
+    // case EXPR_GROUPING:
+        // parenthesize("group", expr->as.binary.left);
+        // break;
     case EXPR_GROUPING:
-        parenthesize("group", expr->as.binary.left);
+        printf("(group ");
+        print_expression(expr->as.binary.left); // Directly print inner expression
+        printf(")");
         break;
     case EXPR_UNARY:
         parenthesize(expr->as.binary.operator->lexeme, expr->as.binary.right);
