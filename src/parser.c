@@ -262,53 +262,65 @@ Expression *parse(Parser *parser, int *error_return)
 
 void print_expression(Expression *expr)
 {
-    if (expr == NULL) {
+    if (expr == NULL)
+    {
         return;
     }
 
-    switch (expr->type) {
-        case EXPR_BINARY: {
-            print_expression(expr->as.binary.left);
-            print_expression(expr->as.binary.right);
-            printf("%s ", expr->as.binary.operator->lexeme);
-            break;
-        }
+    switch (expr->type)
+    {
+    case EXPR_BINARY:
+    {
+        print_expression(expr->as.binary.left);
+        print_expression(expr->as.binary.right);
+        printf("%s ", expr->as.binary.operator->lexeme);
+        break;
+    }
 
-        case EXPR_LITERAL: {
-            TokenType type = expr->as.literal.token_type;
-            switch (type) {
-                case NUMBER:
-                    if (expr->as.literal.data.number != NULL) {
-                        printf("%g ", *expr->as.literal.data.number);
-                    } else {
-                        printf("NaN ");
-                    }
-                    break;
-                case STRING:
-                    if (expr->as.literal.data.string != NULL) {
-                        printf("\"%s\" ", expr->as.literal.data.string);
-                    } else {
-                        printf("\"\" ");
-                    }
-                    break;
-                case TRUE:
-                    printf("true");
-                    break;
-                case FALSE:
-                    printf("false");
-                    break;
-                case NIL:
-                    printf("nil");
-                    break;
-                default:
-                    printf("<unknown literal> ");
-                    break;
+    case EXPR_LITERAL:
+    {
+        TokenType type = expr->as.literal.token_type;
+        switch (type)
+        {
+        case NUMBER:
+            double number = *expr->as.literal.data.number;
+            if (floor(number) == number)
+            { // integer
+                printf("%.1lf ", number);
+            }
+            else
+            { // floatvoid print_expression(Expression *expr)
+                printf("%.15g ", number);
             }
             break;
-        }
-
-        default:
-            printf("<unknown expr> ");
+        case STRING:
+            if (expr->as.literal.data.string != NULL)
+            {
+                printf("\"%s\" ", expr->as.literal.data.string);
+            }
+            else
+            {
+                printf("\"\" ");
+            }
             break;
+        case TRUE:
+            printf("true");
+            break;
+        case FALSE:
+            printf("false");
+            break;
+        case NIL:
+            printf("nil");
+            break;
+        default:
+            printf("<unknown literal> ");
+            break;
+        }
+        break;
+    }
+
+    default:
+        printf("<unknown expr> ");
+        break;
     }
 }

@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
                     printf("%s %s %.1lf\n", token_type_to_str(token.type), token.lexeme, *(double *)token.literal);
                 }
                 else
-                { // float
+                { // floatvoid print_expression(Expression *expr)
                     printf("%s %s %.15g\n", token_type_to_str(token.type), token.lexeme, *(double *)token.literal);
                 }
             }
