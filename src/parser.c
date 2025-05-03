@@ -391,3 +391,19 @@ void print_expression(Expression *expr)
         break;
     }
 }
+
+void print_literal(Literal *literal){
+    switch(literal->token_type){
+        case TRUE:
+            printf("true");
+            break;
+        case FALSE:
+            printf("false");
+            break;
+        case NIL:
+            printf("nil");
+            break;
+        default:
+            fprintf(stderr, "print_literal for type %s not implemented yet\n", token_type_to_str(literal->token_type));
+    }
+}

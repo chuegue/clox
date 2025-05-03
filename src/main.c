@@ -5,6 +5,7 @@
 
 #include "scanner.h"
 #include "parser.h"
+#include "interpreter.h"
 
 char *read_file_contents(const char *filename)
 {
@@ -141,6 +142,62 @@ int main(int argc, char *argv[])
                 print_expression(expression);
             }
             printf("\n");
+        }
+        if (scanner->had_error == 1)
+        {
+            error_code = 65;
+        }
+        free(file_contents);
+        free_scanner(scanner);
+    }
+    else if (strcmp(command, "evaluate") == 0)
+    {
+        // You can use print statements as follows for debugging, they'll be visible when running tests.
+
+        char *file_contents = read_file_contents(argv[2]);
+
+        Scanner *scanner = scanToken(file_contents);
+#if 1
+        fprintf(stderr, "---------------Number of tokens = %zu---------------\n", scanner->number_tokens);
+        for (size_t i = 0; i < scanner->number_tokens; i++)
+        {
+            Token token = scanner->tokens[i];
+            if (token.literal == NULL)
+            {
+                fprintf(stderr, "%s %s null\n", token_type_to_str(token.type), token.lexeme);
+            }
+            else if (token.type == STRING)
+            {
+                fprintf(stderr, "%s %s %s\n", token_type_to_str(token.type), token.lexeme, (char *)token.literal);
+            }
+            else if (token.type == NUMBER)
+            {
+                double number = *(double *)token.literal;
+                if (floor(number) == number)
+                { // integer
+                    fprintf(stderr, "%s %s %.1lf\n", token_type_to_str(token.type), token.lexeme, *(double *)token.literal);
+                }
+                else
+                { // floatvoid print_expression(Expression *expr)
+                    fprintf(stderr, "%s %s %.15g\n", token_type_to_str(token.type), token.lexeme, *(double *)token.literal);
+                }
+            }
+        }
+        fprintf(stderr, "------------------------------------------------------------\n");
+#endif
+        if (scanner->number_tokens > 0)
+        {
+            Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);
+            Expression *expression = parse(parser, &error_code);
+#if 0
+            if (error_code == 0)
+            {
+                print_expression(expression);
+            }
+            printf("\n");
+#endif
+            Literal *evaluation = evaluate(expression);
+            print_literal(evaluation);
         }
         if (scanner->had_error == 1)
         {

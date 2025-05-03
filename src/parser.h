@@ -5,13 +5,6 @@
 
 typedef struct Expression_ Expression;
 
-// typedef union {
-//     int bool_val;
-//     int null;
-//     char *string;
-//     double *number;
-// } Literal_;
-
 typedef struct {
     TokenType token_type;
     union {
@@ -52,5 +45,6 @@ typedef struct
 Parser *init_parser(Token *tokens, size_t len_tokens);
 Expression *parse(Parser *parser, int *error_return);
 void print_expression(Expression *expr);
+void print_literal(Literal *literal);
 
 #endif //__PARSER__

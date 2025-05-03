@@ -3,6 +3,7 @@
 
 CMakeFiles/interpreter.dir/src/main.c.o
  /home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/main.c
+ /home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/interpreter.h
  /home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/parser.h
  /home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src/scanner.h
  /usr/include/alloca.h
