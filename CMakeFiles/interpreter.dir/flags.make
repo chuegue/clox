@@ -6,5 +6,5 @@ C_DEFINES =
 
 C_INCLUDES = -I/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/src
 
-C_FLAGS = -std=gnu2x
+C_FLAGS = -g3 -O0 -std=gnu2x
 

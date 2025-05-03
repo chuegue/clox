@@ -11,7 +11,7 @@ file(GLOB_RECURSE SOURCE_FILES
 
 # Debug/Release configurations
 if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -O0 -Wall -Wextra")
+    set(CMAKE_C_FLAGS_DEBUG "-g3 -O0")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
 endif()
 

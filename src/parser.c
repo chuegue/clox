@@ -397,13 +397,13 @@ void print_literal(Literal *literal)
     switch (literal->token_type)
     {
     case TRUE:
-        printf("true");
+        printf("true\n");
         break;
     case FALSE:
-        printf("false");
+        printf("false\n");
         break;
     case NIL:
-        printf("nil");
+        printf("nil\n");
         break;
     case NUMBER:
         if (floor(*literal->data.number) == *literal->data.number)

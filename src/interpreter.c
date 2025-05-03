@@ -16,7 +16,7 @@ Literal *visitGroupingExpr(Expression *expr)
 
 int isTruthy(Literal *object)
 {
-    if (object->data.null == 1)
+    if (object->token_type == NIL && object->data.null == 1)
     {
         return 0;
     }
