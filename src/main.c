@@ -196,12 +196,12 @@ int main(int argc, char *argv[])
             }
             printf("\n");
 #endif
-            Literal *evaluation = evaluate(expression);
+            Literal *evaluation = evaluate(expression, &error_code);
+            if (error_code == 70)
+            {
+                return error_code;
+            }
             print_literal(evaluation);
-        }
-        if (scanner->had_error == 1)
-        {
-            error_code = 65;
         }
         free(file_contents);
         free_scanner(scanner);

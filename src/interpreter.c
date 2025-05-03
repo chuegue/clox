@@ -2,7 +2,9 @@
 
 #include "interpreter.h"
 
-Literal *evaluate(Expression *expr);
+int *error_code;
+
+Literal *evaluate(Expression *expr, int *error_code);
 
 Literal *visitLiteralExpr(Expression *expr)
 {
@@ -11,7 +13,7 @@ Literal *visitLiteralExpr(Expression *expr)
 
 Literal *visitGroupingExpr(Expression *expr)
 {
-    return evaluate(expr);
+    return evaluate(expr, error_code);
 }
 
 int isTruthy(Literal *object)
@@ -29,7 +31,7 @@ int isTruthy(Literal *object)
 
 Literal *visitUnaryExpr(Expression *expr)
 {
-    Literal *right = evaluate(expr->as.binary.right);
+    Literal *right = evaluate(expr->as.binary.right, error_code);
     switch (expr->as.binary.operator->type)
     {
     case BANG:
@@ -39,6 +41,10 @@ Literal *visitUnaryExpr(Expression *expr)
         return ret;
         break;
     case MINUS:
+        if(right->token_type != NUMBER){
+            fprintf(stderr, "Operand must be a number.\n");
+            *error_code = 70;
+        }
         *right->data.number *= -1;
         return right;
         break;
@@ -75,8 +81,8 @@ int isEqual(Literal *a, Literal *b)
 
 Literal *visitBinaryExpr(Expression *expr)
 {
-    Literal *left = evaluate(expr->as.binary.left);
-    Literal *right = evaluate(expr->as.binary.right);
+    Literal *left = evaluate(expr->as.binary.left, error_code);
+    Literal *right = evaluate(expr->as.binary.right, error_code);
     Literal *ret = calloc(1, sizeof(Literal));
     switch (expr->as.binary.operator->type)
     {
@@ -147,8 +153,9 @@ Literal *visitBinaryExpr(Expression *expr)
     }
 }
 
-Literal *evaluate(Expression *expr)
+Literal *evaluate(Expression *expr, int *error_code_param)
 {
+    error_code = error_code_param;
     switch (expr->type)
     {
     case EXPR_LITERAL:
