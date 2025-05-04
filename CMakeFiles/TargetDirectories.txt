@@ -1,3 +1,0 @@
-/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles/interpreter.dir
-/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles/edit_cache.dir
-/home/chuegue/Documents/Code/CodeCrafters/codecrafters-interpreter-c/CMakeFiles/rebuild_cache.dir
