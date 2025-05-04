@@ -45,12 +45,14 @@ typedef struct
 typedef enum {
     STMT_EXPR,
     STMT_PRINT,
+    STMT_VAR,
 } StatementType;
 
 typedef struct 
 {
     StatementType type;
-    Expression *expression;
+    Expression *expression1;
+    Expression *expression2;
 } Statement;
 
 

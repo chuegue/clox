@@ -195,7 +195,11 @@ Expression *primary(Parser *parser)
         // fprintf(stderr, "Wrapping in group\n");
         return init_expression_binary(expr, NULL, NULL, EXPR_GROUPING);
     }
-    
+    allowed_tokens[0] = IDENTIFIER;
+    if(match_parser(parser, allowed_tokens, 1)){
+        advance_parser(parser); //consume IDENTIFIER
+        return expression(parser);
+    }
     consume(parser, EOF_LOX, "Expect expression.");
     return NULL;
 }
@@ -273,20 +277,33 @@ Expression *expression(Parser *parser)
     return equality(parser);
 }
 
-Statement *init_statement(ExpressionType type, Expression *stmt)
+Statement *init_statement(ExpressionType type, Expression *stmt1, Expression *stmt2)
 {
     Statement *new = calloc(1, sizeof(Statement));
     new->type = type;
-    new->expression = stmt;
-    return new;
+    switch (type)
+    {
+    case STMT_EXPR:
+    case STMT_PRINT:
+        new->expression1 = stmt1;
+        new->expression2 = NULL;
+        return new;
+        break;
+    case STMT_VAR:
+        new->expression1 = stmt1;
+        new->expression2 = stmt2;
+        return new;
+        break;
+    }
+    printf("HOW THE FUCK DID YOU GET HERE\n");
 }
 
 Statement *printStatement(Parser *parser)
 {
     Expression *value = expression(parser);
-    //advance_parser(parser);
+    // advance_parser(parser);
     consume(parser, SEMICOLON, "Expect ';' after value.");
-    Statement *new = init_statement(STMT_PRINT, value);
+    Statement *new = init_statement(STMT_PRINT, value, NULL);
     return new;
 }
 
@@ -294,7 +311,7 @@ Statement *expressionStatement(Parser *parser)
 {
     Expression *expr = expression(parser);
     consume(parser, SEMICOLON, "Expect ';' after value.");
-    Statement *new = init_statement(STMT_EXPR, expr);
+    Statement *new = init_statement(STMT_EXPR, expr, NULL);
     return new;
 }
 
@@ -309,6 +326,36 @@ Statement *statement(Parser *parser)
     return expressionStatement(parser);
 }
 
+Statement *varDeclaration(Parser *parser)
+{
+    Token *name = consume(parser, IDENTIFIER, "Expect variable name.");
+
+    Expression *initializer = NULL;
+    TokenType allowed = EQUAL;
+    if (match_parser(parser, &allowed, 1))
+    {
+        initializer = expression(parser);
+    }
+    consume(parser, SEMICOLON, "Expect ';' after variable declaration.");
+    return init_statement(STMT_VAR, init_expression_literal(name->literal, EXPR_LITERAL), initializer);
+}
+
+Statement *declaration(Parser *parser)
+{
+    TokenType allowed[] = {VAR};
+    if (match_parser(parser, allowed, 1))
+    {
+        return varDeclaration(parser);
+    }
+    Statement *stmt = statement(parser);
+    if (error_return_global != 0)
+    {
+        synchronize(parser);
+        return NULL;
+    }
+    return stmt;
+}
+
 // Array of pointers to parse
 Statement **parse(Parser *parser, size_t *len_statements, int *error_return)
 {
@@ -321,8 +368,9 @@ Statement **parse(Parser *parser, size_t *len_statements, int *error_return)
             size_statements *= 2;
             statements = realloc(statements, size_statements * (sizeof(Statement *)));
         }
-        if (error_return_global != 0) break;
-        Statement *stmt = statement(parser);
+        if (error_return_global != 0)
+            break;
+        Statement *stmt = declaration(parser);
         statements[current_statements++] = stmt;
     }
     *error_return = error_return_global;
