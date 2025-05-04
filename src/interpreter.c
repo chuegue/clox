@@ -88,7 +88,7 @@ void checkNumberOperands(Literal *left, Literal *right)
             token_type_to_str(right->token_type));
     // Check if either operand is NOT a number
     if (left->token_type != NUMBER ||
-         right->token_type != NUMBER)
+        right->token_type != NUMBER)
     {
         fprintf(stderr, "Operands must be numbers.\n");
         *error_code = 70;
@@ -100,6 +100,10 @@ Literal *visitBinaryExpr(Expression *expr)
 {
     Literal *left = evaluate(expr->as.binary.left, error_code);
     Literal *right = evaluate(expr->as.binary.right, error_code);
+    if (left == NULL || right == NULL)
+    {
+        return NULL;
+    }
     Literal *ret = calloc(1, sizeof(Literal));
     switch (expr->as.binary.operator->type)
     {
@@ -212,6 +216,10 @@ Literal *visitBinaryExpr(Expression *expr)
 
 Literal *evaluate(Expression *expr, int *error_code_param)
 {
+    if (*error_code_param != 0)
+    {
+        return NULL;
+    }
     error_code = error_code_param;
     switch (expr->type)
     {
