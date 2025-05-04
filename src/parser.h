@@ -42,8 +42,21 @@ typedef struct
     int current;
 } Parser;
 
+typedef enum {
+    STMT_EXPR,
+    STMT_PRINT,
+} StatementType;
+
+typedef struct 
+{
+    StatementType type;
+    Expression *expression;
+} Statement;
+
+
+
 Parser *init_parser(Token *tokens, size_t len_tokens);
-Expression *parse(Parser *parser, int *error_return);
+Statement **parse(Parser *parser, size_t *len_statements, int *error_return);
 void print_expression(Expression *expr);
 void print_literal(Literal *literal);
 

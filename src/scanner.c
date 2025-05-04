@@ -43,9 +43,13 @@ char advance(Scanner *scanner)
 
 void addToken(Scanner *scanner, TokenType type, void *literal)
 {
-    char *text = calloc(scanner->current - scanner->start + 2, sizeof(char));
+    char *text;
+    if(type != EOF_LOX){
+    text = calloc(scanner->current - scanner->start + 2, sizeof(char));
     strncpy(text, scanner->source + scanner->start, scanner->current - scanner->start);
-    // fprintf(stderr, "%d %d\n", scanner->start, scanner->current);
+    }else{
+        text = "";
+    }
     if (scanner->number_tokens >= scanner->size_tokens)
     {
         fprintf(stderr, "Not implemented: increase tokens array size\n");
@@ -295,6 +299,7 @@ Scanner *scanToken(char *file_contents)
             }
         }
     }
+    addToken(scanner, EOF_LOX, NULL);
     return scanner;
 }
 
@@ -419,6 +424,9 @@ char *token_type_to_str(TokenType type)
         break;
     case WHILE:
         text = strdup("WHILE");
+        break;
+    case EOF_LOX:
+        text = strdup("EOF");
         break;
 
     default:

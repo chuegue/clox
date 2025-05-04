@@ -6,6 +6,17 @@ int *error_code;
 
 Literal *evaluate(Expression *expr, int *error_code);
 
+void visitExpressionStatement(Statement *stmt)
+{
+    evaluate(stmt->expression, error_code);
+}
+
+void visitPrintStatement(Statement *stmt)
+{
+    Literal *value = evaluate(stmt->expression, error_code);
+    print_literal(value);
+}
+
 Literal *visitLiteralExpr(Expression *expr)
 {
     return &expr->as.literal;
@@ -241,4 +252,32 @@ Literal *evaluate(Expression *expr, int *error_code_param)
         break;
     }
     return NULL;
+}
+
+void execute(Statement *statement, int *error_code_param)
+{
+    if (*error_code_param != 0)
+    {
+        return;
+    }
+    error_code = error_code_param;
+    switch (statement->type)
+    {
+    case STMT_PRINT:
+        visitPrintStatement(statement);
+        break;
+    case STMT_EXPR:
+        visitExpressionStatement(statement);
+        break;
+    default:
+        break;
+    }
+}
+
+void interpret(Statement **statements, size_t len_statements, int *error_code_param)
+{
+    for (size_t i = 0; i < len_statements; i++)
+    {
+        execute(statements[i], error_code_param);
+    }
 }

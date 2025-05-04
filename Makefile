@@ -10,7 +10,7 @@ DEBUG_CFLAGS = -g -O0 -DDEBUG
 RELEASE_CFLAGS = -O2 -DNDEBUG
 
 # Binary name
-BIN_NAME = interpreter
+BIN_NAME = clox
 
 # Source files
 SRCS = $(wildcard src/*.c)

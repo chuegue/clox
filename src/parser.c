@@ -34,19 +34,23 @@ Parser *init_parser(Token *tokens, size_t len_tokens)
     return parser;
 }
 
+int isAtEnd_parser(Parser *parser)
+{
+    return parser->tokens[parser->current].type == EOF_LOX;
+}
+
 Token *peek_parser(Parser *parser)
 {
     return &parser->tokens[parser->current];
 }
 
-int isAtEnd_parser(Parser *parser)
-{
-    Token *t = peek_parser(parser);
-    return t->type == EOF_LOX;
-}
-
 Token *previous(Parser *parser)
 {
+    if (isAtEnd_parser(parser))
+    {
+        return NULL;
+    }
+
     return &parser->tokens[parser->current - 1];
 }
 
@@ -97,6 +101,7 @@ Token *consume(Parser *parser, TokenType type, char message[])
         fprintf(stderr, "Line %d at '%s'. %s", peek_parser(parser)->line, peek_parser(parser)->lexeme, message);
     }
     printf("\n");
+    advance_parser(parser); // Force advance to next token
     return NULL;
 }
 
@@ -134,6 +139,7 @@ Expression *primary(Parser *parser)
     TokenType allowed_type = FALSE;
     if (match_parser(parser, &allowed_type, 1))
     {
+        advance_parser(parser);
         expression_literal->as.literal.token_type = FALSE;
         expression_literal->as.literal.data.bool_val = 0;
         expression_literal->type = EXPR_LITERAL;
@@ -142,6 +148,7 @@ Expression *primary(Parser *parser)
     allowed_type = TRUE;
     if (match_parser(parser, &allowed_type, 1))
     {
+        advance_parser(parser);
         expression_literal->as.literal.token_type = TRUE;
         expression_literal->as.literal.data.bool_val = 1;
         expression_literal->type = EXPR_LITERAL;
@@ -150,6 +157,7 @@ Expression *primary(Parser *parser)
     allowed_type = NIL;
     if (match_parser(parser, &allowed_type, 1))
     {
+        advance_parser(parser);
         expression_literal->as.literal.token_type = NIL;
         expression_literal->as.literal.data.null = 1;
         expression_literal->type = EXPR_LITERAL;
@@ -158,7 +166,9 @@ Expression *primary(Parser *parser)
     TokenType allowed_tokens[] = {NUMBER};
     if (match_parser(parser, allowed_tokens, 1))
     {
+        advance_parser(parser);
         Token *prev = previous(parser);
+        printf("Consumed NUMBER: %s\n", prev->lexeme); // Debug
         double *prev_literal = (double *)prev->literal;
         expression_literal->as.literal.data.number = prev_literal;
         expression_literal->as.literal.token_type = NUMBER;
@@ -168,9 +178,10 @@ Expression *primary(Parser *parser)
     allowed_tokens[0] = STRING;
     if (match_parser(parser, allowed_tokens, 1))
     {
-        Token *prev = previous(parser);
-        char *prev_literal = (char *)prev->literal;
-        expression_literal->as.literal.data.string = prev_literal;
+        advance_parser(parser);
+        Token *prev = previous(parser); // Get consumed STRING token
+        printf("Consumed STRING: %s\n", prev->lexeme); // Debug
+        expression_literal->as.literal.data.string = (char *)prev->literal;
         expression_literal->as.literal.token_type = STRING;
         expression_literal->type = EXPR_LITERAL;
         return expression_literal;
@@ -178,6 +189,7 @@ Expression *primary(Parser *parser)
     allowed_tokens[0] = LEFT_PAREN;
     if (match_parser(parser, allowed_tokens, 1))
     {
+        advance_parser(parser); // Consume '('
         Expression *expr = expression(parser);
         // fprintf(stderr, "%s\n", expr->as.literal.data.string);
         consume(parser, RIGHT_PAREN, "Expect ')' after expression.");
@@ -185,6 +197,7 @@ Expression *primary(Parser *parser)
         // fprintf(stderr, "Wrapping in group\n");
         return init_expression_binary(expr, NULL, NULL, EXPR_GROUPING);
     }
+    
     consume(parser, EOF_LOX, "Expect expression.");
     return NULL;
 }
@@ -196,7 +209,7 @@ Expression *unary(Parser *parser)
     TokenType allowed_Types[] = {BANG, MINUS};
     if (match_parser(parser, allowed_Types, 2))
     {
-        Token *operator = previous(parser);
+        Token *operator = advance_parser(parser);
         Expression *right = unary(parser);
         return init_expression_binary(NULL, operator, right, EXPR_UNARY);
     }
@@ -209,7 +222,7 @@ Expression *factor(Parser *parser)
     TokenType allowed_types[] = {SLASH, STAR};
     while (match_parser(parser, allowed_types, 2))
     {
-        Token *operator = previous(parser);
+        Token *operator = advance_parser(parser);
         Expression *right = unary(parser);
         expr = init_expression_binary(expr, operator, right, EXPR_BINARY);
     }
@@ -222,7 +235,7 @@ Expression *term(Parser *parser)
     TokenType allowed_types[] = {MINUS, PLUS};
     while (match_parser(parser, allowed_types, 2))
     {
-        Token *operator = previous(parser);
+        Token *operator = advance_parser(parser);
         Expression *right = factor(parser);
         expr = init_expression_binary(expr, operator, right, EXPR_BINARY);
     }
@@ -235,7 +248,7 @@ Expression *comparison(Parser *parser)
     TokenType allowed_types[] = {GREATER, GREATER_EQUAL, LESS, LESS_EQUAL};
     while (match_parser(parser, allowed_types, 4))
     {
-        Token *operator = previous(parser);
+        Token *operator = advance_parser(parser);
         Expression *right = term(parser);
         expr = init_expression_binary(expr, operator, right, EXPR_BINARY);
     }
@@ -249,7 +262,7 @@ Expression *equality(Parser *parser)
     TokenType allowed_types[] = {BANG_EQUAL, EQUAL_EQUAL};
     while (match_parser(parser, allowed_types, 2))
     {
-        Token *operator = previous(parser);
+        Token *operator = advance_parser(parser);
         Expression *right = comparison(parser);
         expr = init_expression_binary(expr, operator, right, EXPR_BINARY);
     }
@@ -262,11 +275,61 @@ Expression *expression(Parser *parser)
     return equality(parser);
 }
 
-Expression *parse(Parser *parser, int *error_return)
+Statement *init_statement(ExpressionType type, Expression *stmt)
 {
-    Expression *tree = expression(parser);
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = type;
+    new->expression = stmt;
+    return new;
+}
+
+Statement *printStatement(Parser *parser)
+{
+    Expression *value = expression(parser);
+    //advance_parser(parser);
+    consume(parser, SEMICOLON, "Expect ';' after value.");
+    Statement *new = init_statement(STMT_PRINT, value);
+    return new;
+}
+
+Statement *expressionStatement(Parser *parser)
+{
+    Expression *expr = expression(parser);
+    consume(parser, SEMICOLON, "Expect ';' after value.");
+    Statement *new = init_statement(STMT_EXPR, expr);
+    return new;
+}
+
+Statement *statement(Parser *parser)
+{
+    TokenType allowed[] = {PRINT};
+    if (match_parser(parser, allowed, 1))
+    {
+        advance_parser(parser); // Consume PRINT token
+        return printStatement(parser);
+    }
+    return expressionStatement(parser);
+}
+
+// Array of pointers to parse
+Statement **parse(Parser *parser, size_t *len_statements, int *error_return)
+{
+    size_t size_statements = 128, current_statements = 0;
+    Statement **statements = calloc(size_statements, sizeof(Statement *));
+    while (!isAtEnd_parser(parser))
+    {
+        if (current_statements >= size_statements)
+        {
+            size_statements *= 2;
+            statements = realloc(statements, size_statements * (sizeof(Statement *)));
+        }
+        if (error_return_global != 0) break;
+        Statement *stmt = statement(parser);
+        statements[current_statements++] = stmt;
+    }
     *error_return = error_return_global;
-    return tree;
+    *len_statements = current_statements;
+    return statements;
 }
 
 void parenthesize(char *name, Expression *expression)
