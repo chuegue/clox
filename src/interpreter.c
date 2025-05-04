@@ -83,12 +83,17 @@ int isEqual(Literal *a, Literal *b)
 
 void checkNumberOperands(Expression *expr)
 {
-    if (expr->as.binary.left->as.literal.token_type != NUMBER || expr->as.binary.right->as.literal.token_type != NUMBER)
+    // fprintf(stderr, "checkNumberOperands(%s, %s)\n",
+    //         token_type_to_str(expr->as.binary.left->as.literal.token_type),
+    //         token_type_to_str(expr->as.binary.right->as.literal.token_type));
+    // Check if either operand is NOT a number
+    if (expr->as.binary.left->as.literal.token_type != NUMBER ||
+        expr->as.binary.right->as.literal.token_type != NUMBER)
     {
-        return;
+        fprintf(stderr, "Operands must be numbers.\n");
+        *error_code = 70;
     }
-    fprintf(stderr, "Operands must be numbers.\n");
-    *error_code = 70;
+    // Else, both are numbers (valid case), do nothing
 }
 
 Literal *visitBinaryExpr(Expression *expr)
