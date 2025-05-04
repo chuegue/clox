@@ -8,12 +8,12 @@ Literal *evaluate(Expression *expr, int *error_code);
 
 void visitExpressionStatement(Statement *stmt)
 {
-    evaluate(stmt->expression, error_code);
+    evaluate(stmt->expression1, error_code);
 }
 
 void visitPrintStatement(Statement *stmt)
 {
-    Literal *value = evaluate(stmt->expression, error_code);
+    Literal *value = evaluate(stmt->expression1, error_code);
     print_literal(value);
 }
 
