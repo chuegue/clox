@@ -1,9 +1,57 @@
-Build:
 
-  make 
-  
-  make release
+# clox
 
-Run:
+This program implements a lox interpreter in C. It can (as of now) tokenize, parse, and execute print statements. This interpreter is mostly inspired by the one in Crafting Interpreters.
 
-  ./clox {tokenize | parse | evaluate} your_file.lox
+
+
+## Acknowledgements
+
+ - [Crafting Interpreters](https://craftinginterpreters.com/)
+
+
+## Building
+
+Build clox with make and gcc
+
+```bash
+make
+```
+
+By default, a debug version is built. For an optimized version, run
+
+```bash
+make release
+```
+
+If any weird building errors occur, run
+
+
+```bash
+make clear && make
+```
+
+## Running
+
+To run the clox interpreter, run
+
+```bash
+./clox {tokenize | parse | run} your_file.lox
+```
+
+
+## Usage/Examples
+
+```bash
+./clox run test_files/interpret_simple.lox
+```
+should yield
+
+```bash8
+one
+true
+false
+-54
+concat
+```
+
