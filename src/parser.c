@@ -168,7 +168,6 @@ Expression *primary(Parser *parser)
     {
         advance_parser(parser);
         Token *prev = previous(parser);
-        printf("Consumed NUMBER: %s\n", prev->lexeme); // Debug
         double *prev_literal = (double *)prev->literal;
         expression_literal->as.literal.data.number = prev_literal;
         expression_literal->as.literal.token_type = NUMBER;
@@ -180,7 +179,6 @@ Expression *primary(Parser *parser)
     {
         advance_parser(parser);
         Token *prev = previous(parser); // Get consumed STRING token
-        printf("Consumed STRING: %s\n", prev->lexeme); // Debug
         expression_literal->as.literal.data.string = (char *)prev->literal;
         expression_literal->as.literal.token_type = STRING;
         expression_literal->type = EXPR_LITERAL;

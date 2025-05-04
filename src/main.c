@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     }
 
     const char *command = argv[1];
-    printf("COMMAND: %s\n", command);
+    //printf("COMMAND: %s\n", command);
     if (strcmp(command, "tokenize") == 0)
     {
         // You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
         char *file_contents = read_file_contents(argv[2]);
 
         Scanner *scanner = scanToken(file_contents);
-        print_tokens(scanner);
+        //print_tokens(scanner);
 
         if (scanner->number_tokens > 0)
         {

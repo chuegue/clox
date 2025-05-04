@@ -94,9 +94,9 @@ int isEqual(Literal *a, Literal *b)
 
 void checkNumberOperands(Literal *left, Literal *right)
 {
-    fprintf(stderr, "checkNumberOperands(%s, %s)\n",
-            token_type_to_str(left->token_type),
-            token_type_to_str(right->token_type));
+    // fprintf(stderr, "checkNumberOperands(%s, %s)\n",
+    //         token_type_to_str(left->token_type),
+    //         token_type_to_str(right->token_type));
     // Check if either operand is NOT a number
     if (left->token_type != NUMBER ||
         right->token_type != NUMBER)
