@@ -163,11 +163,6 @@ Literal *visitBinaryExpr(Expression *expr)
     case PLUS:
         if (left->token_type == NUMBER && right->token_type == NUMBER)
         {
-            checkNumberOperands(left, right);
-            if (*error_code == 70)
-            {
-                return NULL;
-            }
             ret->token_type = NUMBER;
             ret->data.number = calloc(1, sizeof(double));
             *(ret->data.number) = *(left->data.number) + *(right->data.number);
@@ -180,6 +175,11 @@ Literal *visitBinaryExpr(Expression *expr)
             strcpy(ret->data.string, left->data.string);
             strcpy(ret->data.string + strlen(left->data.string), right->data.string);
             return ret;
+        }
+        checkNumberOperands(left, right);
+        if (*error_code == 70)
+        {
+            return NULL;
         }
         break;
     case SLASH:
