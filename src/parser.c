@@ -74,7 +74,6 @@ int match_parser(Parser *parser, TokenType types[], size_t len_types)
     {
         if (check(parser, types[i]))
         {
-            Token *t = advance_parser(parser);
             return 1;
         }
     }
@@ -98,6 +97,7 @@ Token *consume(Parser *parser, TokenType type, char message[])
         fprintf(stderr, "Line %d at '%s'. %s", peek_parser(parser)->line, peek_parser(parser)->lexeme, message);
     }
     printf("\n");
+    return NULL;
 }
 
 void synchronize(Parser *parser)
@@ -271,8 +271,6 @@ Expression *parse(Parser *parser, int *error_return)
 
 void parenthesize(char *name, Expression *expression)
 {
-    char *builder = calloc(512, sizeof(char));
-    char temp[512] = {0};
     if (expression->type == EXPR_LITERAL)
     {
         TokenType type = expression->as.literal.token_type;
@@ -334,8 +332,6 @@ void print_expression(Expression *expr)
     {
         return;
     }
-
-    char *str;
     switch (expr->type)
     {
     case EXPR_BINARY:

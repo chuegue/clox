@@ -29,7 +29,7 @@ char *read_file_contents(const char *filename)
     }
 
     size_t bytes_read = fread(file_contents, 1, file_size, file);
-    if (bytes_read < file_size)
+    if (bytes_read < (size_t)file_size)
     {
         fprintf(stderr, "Error reading file contents\n");
         free(file_contents);

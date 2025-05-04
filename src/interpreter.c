@@ -212,6 +212,7 @@ Literal *visitBinaryExpr(Expression *expr)
         return NULL;
         break;
     }
+    return NULL;
 }
 
 Literal *evaluate(Expression *expr, int *error_code_param)
@@ -239,4 +240,5 @@ Literal *evaluate(Expression *expr, int *error_code_param)
     default:
         break;
     }
+    return NULL;
 }
