@@ -83,7 +83,7 @@ int isEqual(Literal *a, Literal *b)
 
 void checkNumberOperands(Expression *expr)
 {
-    if (expr->as.binary.left->as.literal.token_type == NUMBER && expr->as.binary.right->as.literal.token_type == NUMBER)
+    if (expr->as.binary.left->as.literal.token_type != NUMBER || expr->as.binary.right->as.literal.token_type != NUMBER)
     {
         return;
     }
