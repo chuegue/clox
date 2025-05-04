@@ -1,5 +1,13 @@
 .vscode
+clox
 interpreter
+
+CMakeLists.txt
+codecrafters.yml
+vcpkg-configuration.json
+vcpkg.json
+
+
 
 # Prerequisites
 *.d
