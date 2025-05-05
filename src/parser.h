@@ -5,9 +5,11 @@
 
 typedef struct Expression_ Expression;
 
-typedef struct {
+typedef struct
+{
     TokenType token_type;
-    union {
+    union
+    {
         int bool_val;
         int null;
         char *string;
@@ -15,24 +17,33 @@ typedef struct {
     } data;
 } Literal;
 
-typedef enum {
+typedef enum
+{
     EXPR_LITERAL,
     EXPR_BINARY,
     EXPR_GROUPING,
-    EXPR_UNARY
+    EXPR_UNARY,
+    EXPR_VARIABLE,
 } ExpressionType;
 
 struct Expression_
 {
     ExpressionType type;
-    union {
-        struct {
+    union
+    {
+        struct
+        {
             Expression *left;
             Token *operator;
             Expression *right;
         } binary;
 
         Literal literal;
+
+        struct
+        {
+            Token *name;
+        } variable;
     } as;
 };
 
@@ -42,20 +53,19 @@ typedef struct
     int current;
 } Parser;
 
-typedef enum {
+typedef enum
+{
     STMT_EXPR,
     STMT_PRINT,
     STMT_VAR,
 } StatementType;
 
-typedef struct 
+typedef struct
 {
     StatementType type;
     Expression *expression1;
     Expression *expression2;
 } Statement;
-
-
 
 Parser *init_parser(Token *tokens, size_t len_tokens);
 Statement **parse(Parser *parser, size_t *len_statements, int *error_return);

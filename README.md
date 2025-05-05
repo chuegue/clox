@@ -43,7 +43,7 @@ To run the clox interpreter, run
 ## Usage/Examples
 
 ```bash
-./clox run test_files/interpret_simple.lox
+./clox run test_files/run_simple.lox
 ```
 should yield
 

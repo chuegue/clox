@@ -196,9 +196,16 @@ Expression *primary(Parser *parser)
         return init_expression_binary(expr, NULL, NULL, EXPR_GROUPING);
     }
     allowed_tokens[0] = IDENTIFIER;
-    if(match_parser(parser, allowed_tokens, 1)){
-        advance_parser(parser); //consume IDENTIFIER
-        return expression(parser);
+    if (match_parser(parser, allowed_tokens, 1))
+    {
+        Token *name = advance_parser(parser);
+        Expression * var_expr = calloc(1, sizeof(Expression));
+        var_expr->type = EXPR_VARIABLE;
+        var_expr->as.variable.name = name;
+        return var_expr;
+        
+        // advance_parser(parser); // consume IDENTIFIER
+        // return expression(parser);
     }
     consume(parser, EOF_LOX, "Expect expression.");
     return NULL;
@@ -328,16 +335,32 @@ Statement *statement(Parser *parser)
 
 Statement *varDeclaration(Parser *parser)
 {
+    advance_parser(parser);
     Token *name = consume(parser, IDENTIFIER, "Expect variable name.");
 
     Expression *initializer = NULL;
     TokenType allowed = EQUAL;
     if (match_parser(parser, &allowed, 1))
     {
+        advance_parser(parser);
         initializer = expression(parser);
+        if (error_return_global != 0)
+        {
+            return NULL;
+        }
+    }
+    else
+    {
+        Literal *nil_literal = calloc(1, sizeof(Literal));
+        nil_literal->token_type = NIL;
+        nil_literal->data.null = 1;
+        initializer = init_expression_literal(nil_literal, EXPR_LITERAL);
     }
     consume(parser, SEMICOLON, "Expect ';' after variable declaration.");
-    return init_statement(STMT_VAR, init_expression_literal(name->literal, EXPR_LITERAL), initializer);
+    Literal *name_literal = calloc(1, sizeof(Literal));
+    name_literal->token_type = STRING;
+    name_literal->data.string = name->lexeme;
+    return init_statement(STMT_VAR, init_expression_literal(name_literal, EXPR_LITERAL), initializer);
 }
 
 Statement *declaration(Parser *parser)

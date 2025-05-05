@@ -4,27 +4,52 @@
 
 int *error_code;
 
-Literal *evaluate(Expression *expr, int *error_code);
+Literal *evaluate(Interpreter *interpreter, Expression *expr, int *error_code);
 
-void visitExpressionStatement(Statement *stmt)
+Interpreter *init_interpreter()
 {
-    evaluate(stmt->expression1, error_code);
+    Interpreter *new = calloc(1, sizeof(Interpreter));
+    new->env = init_environment();
+    return new;
 }
 
-void visitPrintStatement(Statement *stmt)
+void visitExpressionStatement(Interpreter *interpreter, Statement *stmt)
 {
-    Literal *value = evaluate(stmt->expression1, error_code);
+    evaluate(interpreter, stmt->expression1, error_code);
+}
+
+void visitPrintStatement(Interpreter *interpreter, Statement *stmt)
+{
+    Literal *value = evaluate(interpreter, stmt->expression1, error_code);
     print_literal(value);
 }
 
-Literal *visitLiteralExpr(Expression *expr)
+void visitVarStatement(Interpreter *interpreter, Statement *stmt)
+{
+    Literal *value = calloc(1, sizeof(Literal));
+    value->token_type = NIL;
+    value->data.null = 1;
+    if (stmt->expression2 != NULL)
+    {
+        value = evaluate(interpreter, stmt->expression2, error_code);
+    }
+    define_environment(interpreter->env, stmt->expression1->as.literal.data.string, value);
+    return;
+}
+
+Literal *visitVariableExpression(Interpreter *interpreter, Expression *var_expr)
+{
+    return get_environment(interpreter->env, var_expr->as.variable.name->lexeme, error_code);
+}
+
+Literal *visitLiteralExpr(Interpreter *interpreter, Expression *expr)
 {
     return &expr->as.literal;
 }
 
-Literal *visitGroupingExpr(Expression *expr)
+Literal *visitGroupingExpr(Interpreter *interpreter, Expression *expr)
 {
-    return evaluate(expr, error_code);
+    return evaluate(interpreter, expr, error_code);
 }
 
 int isTruthy(Literal *object)
@@ -40,9 +65,9 @@ int isTruthy(Literal *object)
     return 1;
 }
 
-Literal *visitUnaryExpr(Expression *expr)
+Literal *visitUnaryExpr(Interpreter *interpreter, Expression *expr)
 {
-    Literal *right = evaluate(expr->as.binary.right, error_code);
+    Literal *right = evaluate(interpreter, expr->as.binary.right, error_code);
     switch (expr->as.binary.operator->type)
     {
     case BANG:
@@ -107,10 +132,10 @@ void checkNumberOperands(Literal *left, Literal *right)
     // Else, both are numbers (valid case), do nothing
 }
 
-Literal *visitBinaryExpr(Expression *expr)
+Literal *visitBinaryExpr(Interpreter *interpreter, Expression *expr)
 {
-    Literal *left = evaluate(expr->as.binary.left, error_code);
-    Literal *right = evaluate(expr->as.binary.right, error_code);
+    Literal *left = evaluate(interpreter, expr->as.binary.left, error_code);
+    Literal *right = evaluate(interpreter, expr->as.binary.right, error_code);
     if (left == NULL || right == NULL)
     {
         return NULL;
@@ -226,7 +251,7 @@ Literal *visitBinaryExpr(Expression *expr)
     return NULL;
 }
 
-Literal *evaluate(Expression *expr, int *error_code_param)
+Literal *evaluate(Interpreter *interpreter, Expression *expr, int *error_code_param)
 {
     if (*error_code_param != 0)
     {
@@ -236,25 +261,29 @@ Literal *evaluate(Expression *expr, int *error_code_param)
     switch (expr->type)
     {
     case EXPR_LITERAL:
-        return visitLiteralExpr(expr);
+        return visitLiteralExpr(interpreter, expr);
         break;
     case EXPR_BINARY:
-        return visitBinaryExpr(expr);
+        return visitBinaryExpr(interpreter, expr);
         break;
     case EXPR_GROUPING:
-        return visitGroupingExpr(expr->as.binary.left);
+        return visitGroupingExpr(interpreter, expr->as.binary.left);
         break;
     case EXPR_UNARY:
-        return visitUnaryExpr(expr);
+        return visitUnaryExpr(interpreter, expr);
+        break;
+    case EXPR_VARIABLE:
+        return visitVariableExpression(interpreter, expr);
         break;
 
     default:
         break;
     }
+    printf("HOW THE FUCK DID YOU GET HERE\n");
     return NULL;
 }
 
-void execute(Statement *statement, int *error_code_param)
+void execute(Interpreter *interpreter, Statement *statement, int *error_code_param)
 {
     if (*error_code_param != 0)
     {
@@ -264,20 +293,25 @@ void execute(Statement *statement, int *error_code_param)
     switch (statement->type)
     {
     case STMT_PRINT:
-        visitPrintStatement(statement);
+        visitPrintStatement(interpreter, statement);
         break;
     case STMT_EXPR:
-        visitExpressionStatement(statement);
+        visitExpressionStatement(interpreter, statement);
+        break;
+    case STMT_VAR:
+        visitVarStatement(interpreter, statement);
         break;
     default:
+    printf("HOW THE FUCK DID YOU GET HERE\n");
         break;
     }
 }
 
 void interpret(Statement **statements, size_t len_statements, int *error_code_param)
 {
+    Interpreter *interpreter = init_interpreter();
     for (size_t i = 0; i < len_statements; i++)
     {
-        execute(statements[i], error_code_param);
+        execute(interpreter, statements[i], error_code_param);
     }
 }

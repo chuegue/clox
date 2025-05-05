@@ -143,12 +143,12 @@ int main(int argc, char *argv[])
             Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);
             size_t len_statements = 0;
             Statement **statements = parse(parser, &len_statements, &error_code);
-            Literal *evaluation = evaluate(statements[0]->expression1, &error_code);
+            //Literal *evaluation = evaluate(statements[0]->expression1, &error_code);
             if (error_code == 70)
             {
                 return error_code;
             }
-            print_literal(evaluation);
+            //print_literal(evaluation);
         }
         free(file_contents);
         free_scanner(scanner);
