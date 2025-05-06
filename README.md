@@ -7,7 +7,9 @@ This program implements a lox interpreter in C. It can (as of now) tokenize, par
 ## Features
 
 - Tokenizes, parses, and runs lox scripts
-- Can interpret global variables, arithmetic, logic, andprint statements
+- Can interpret global variables, arithmetic, logic, and print statements
+- Variable assignment supported
+- See test_files for working examples
 
 
 ## Acknowledgements

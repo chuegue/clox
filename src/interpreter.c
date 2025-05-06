@@ -9,7 +9,7 @@ Literal *evaluate(Interpreter *interpreter, Expression *expr, int *error_code);
 Interpreter *init_interpreter()
 {
     Interpreter *new = calloc(1, sizeof(Interpreter));
-    new->env = init_environment();
+    new->env = init_environment(NULL);
     return new;
 }
 
@@ -41,6 +41,12 @@ void visitVarStatement(Interpreter *interpreter, Statement *stmt)
     }
     define_environment(interpreter->env, stmt->data.var.name->lexeme, value);
     return;
+}
+
+Literal *visitAssignExpr(Interpreter*interpreter, Expression *expr){
+    Literal *value = evaluate(interpreter, expr->as.assign.value, error_code);
+    assign_environment(interpreter->env, expr->as.assign.name, value, error_code);
+    return value;
 }
 
 Literal *visitVariableExpression(Interpreter *interpreter, Expression *var_expr)
@@ -276,11 +282,12 @@ Literal *evaluate(Interpreter *interpreter, Expression *expr, int *error_code_pa
     case EXPR_VARIABLE:
         return visitVariableExpression(interpreter, expr);
         break;
-
+    case EXPR_ASSIGN:
+        return visitAssignExpr(interpreter, expr);  
     default:
         break;
     }
-    printf("HOW THE FUCK DID YOU GET HERE\n");
+    printf("HOW THE FUCK DID YOU GET HERE evaluate\n");
     return NULL;
 }
 

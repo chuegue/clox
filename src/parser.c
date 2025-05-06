@@ -34,6 +34,15 @@ Expression *init_expression_literal(Literal *literal, ExpressionType expression_
     return expression;
 }
 
+Expression *init_expression_assign(Parser *parser, Token *name, Expression *value, ExpressionType type){
+    Expression *expression = calloc(1, sizeof(Expression));
+
+    expression->as.assign.name = name;
+    expression->as.assign.value = value;
+    expression->type = type;
+    return expression;
+}
+
 Parser *init_parser(Token **tokens, size_t len_tokens)
 {
     Parser *parser = calloc(1, sizeof(Parser));
@@ -361,10 +370,46 @@ Expression *equality(Parser *parser)
     return expr;
 }
 
-// expression     → equality ;
+/*
+  private Expr assignment() {
+    Expr expr = equality();
+
+    if (match(EQUAL)) {
+      Token equals = previous();
+      Expr value = assignment();
+
+      if (expr instanceof Expr.Variable) {
+        Token name = ((Expr.Variable)expr).name;
+        return new Expr.Assign(name, value);
+      }
+
+      error(equals, "Invalid assignment target."); 
+    }
+
+    return expr;
+  }
+*/
+Expression *assignment(Parser *parser){
+    Expression *expr = equality(parser);
+    TokenType allowed = EQUAL;
+    if(match_parser(parser, &allowed, 1)){
+        Token *equals = previous(parser);
+        advance_parser(parser); //consume = token
+        Expression * value = assignment(parser);
+        if(expr->type == EXPR_VARIABLE){
+            Token *name = expr->as.variable.name;
+            return init_expression_assign(parser, name, value, EXPR_ASSIGN);
+        }
+        error_return_global = 65;
+        fprintf(stderr, "Invalid assignment target.\n");
+    }
+    return expr;
+}
+
+
 Expression *expression(Parser *parser)
 {
-    return equality(parser);
+    return assignment(parser);
 }
 
 Statement *init_statement(ExpressionType type, Expression *expr_or_initializer, Token *name)
@@ -638,7 +683,7 @@ void print_literal(Literal *literal)
         }
         break;
     case STRING:
-        printf("%s\n", literal->data.string);
+        printf("%s", literal->data.string);
         break;
     default:
         fprintf(stderr, "print_literal for type %s not implemented yet\n", token_type_to_str(literal->token_type));

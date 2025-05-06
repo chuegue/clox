@@ -3,6 +3,9 @@ var b = 2;
 var c;
 print a;
 print b;
-print "a + b =";
+print "a + b = ";
 print a + b;
 print c;
+c = "this is not nil
+";
+print c = 69;

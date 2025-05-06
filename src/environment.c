@@ -30,10 +30,11 @@ void free_environment_node(EnvironmentNode *node)
     node = NULL;
 }
 
-Environment *init_environment()
+Environment *init_environment(Environment *enclosing)
 {
     Environment *env = calloc(1, sizeof(Environment *));
     env->nodes = calloc(ENVIRONMENT_SIZE, sizeof(EnvironmentNode *));
+    env->enclosing = enclosing;
     return env;
 }
 
@@ -107,9 +108,34 @@ Literal *get_environment(Environment *env, char *name, int *error_code)
         }
         current = current->next;
     }
-    fprintf(stderr, "Undefined variable '%s'.\n", name);
+    if (env->enclosing != NULL)
+    {
+        return get_environment(env->enclosing, name, error_code);
+    }
     *error_code = 70;
+    fprintf(stderr, "Undefined variable '%s'.\n", name);
     return NULL;
+}
+
+void assign_environment(Environment *env, Token *name, Literal *value, int *error_code)
+{
+    size_t idx = hash(name->lexeme) % ENVIRONMENT_SIZE;
+    EnvironmentNode *current = env->nodes[idx];
+    while (current != NULL)
+    {
+        if (strcmp(current->key, name->lexeme) == 0)
+        {
+            current->value = value;
+            return;
+        }
+    }
+    if (env->enclosing != NULL)
+    {
+        assign_environment(env->enclosing, name, value, error_code);
+        return;
+    }
+    *error_code = 70;
+    fprintf(stderr, "Undefined variable '%s'.\n", name->lexeme);
 }
 
 void define_environment(Environment *env, char *name, Literal *value)

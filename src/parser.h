@@ -12,6 +12,7 @@ typedef enum
     EXPR_GROUPING,
     EXPR_UNARY,
     EXPR_VARIABLE,
+    EXPR_ASSIGN,
 } ExpressionType;
 
 struct Expression_
@@ -32,6 +33,12 @@ struct Expression_
         {
             Token *name;
         } variable;
+        
+        struct
+        {
+            Token *name;
+            Expression *value;
+        } assign;
     } as;
 };
 
@@ -46,6 +53,7 @@ typedef enum
     STMT_EXPR,
     STMT_PRINT,
     STMT_VAR,
+    STMT_BLOCK,
 } StatementType;
 
 typedef struct
