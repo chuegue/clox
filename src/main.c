@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <errno.h>
 
 #include "scanner.h"
 #include "parser.h"
@@ -12,7 +13,8 @@ char *read_file_contents(const char *filename)
     FILE *file = fopen(filename, "r");
     if (file == NULL)
     {
-        fprintf(stderr, "Error reading file: %s\n", filename);
+        fprintf(stderr, "Error reading file %s: %s\n", filename, strerror(errno));
+        exit(1);
         return NULL;
     }
 
