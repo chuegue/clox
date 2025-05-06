@@ -61,6 +61,3 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-
-build
-vcpkg_installed
