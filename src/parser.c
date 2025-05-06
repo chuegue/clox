@@ -434,7 +434,7 @@ Statement *varDeclaration(Parser *parser)
         }
     }
     consume(parser, SEMICOLON, "Expect ';' after variable declaration.");
-    Statement *ret_stmt = init_statement(STMT_VAR, init_expression_literal(initializer->as.literal, initializer->type), name);
+    Statement *ret_stmt = init_statement(STMT_VAR, initializer, name);
     return ret_stmt;
 }
 
