@@ -1,0 +1,8 @@
+var a = 1;
+var b = 2;
+var c;
+print a;
+print b;
+print "a + b =";
+print a + b;
+print c;
