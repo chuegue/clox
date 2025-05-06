@@ -50,15 +50,19 @@ To run the clox interpreter, run
 ## Usage/Examples
 
 ```bash
-./clox run test_files/run_simple.lox
+./clox run test_files/scope.lox
 ```
 should yield
 
 ```bash8
-one
-true
-false
--54
-concat
+inner a
+outer b
+global c
+outer a
+outer b
+global c
+global a
+global b
+global c
 ```
 
