@@ -56,6 +56,12 @@ typedef enum
     STMT_BLOCK,
 } StatementType;
 
+typedef struct Statement_ Statement;
+typedef struct {
+    Statement **statements;
+    size_t len_statements;
+} Block;
+
 typedef struct Statement_
 {
     StatementType type;
@@ -74,7 +80,7 @@ typedef struct Statement_
             Token *name;
             Expression *initializer;
         } var;
-        struct Statement_ **block_statements; //list of Statement*
+        Block *block; //list of Statement*
     } data;
 
 } Statement;

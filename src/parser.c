@@ -440,11 +440,13 @@ Statement *init_statement_var(Token *name, Expression *initializer)
     return new;
 }
 
-Statement *init_statement_block(Statement **statements)
+Statement *init_statement_block(Block *blk)
 {
     Statement *new = calloc(1, sizeof(Statement));
     new->type = STMT_BLOCK;
-    new->data.block_statements = statements;
+    new->data.block = calloc(1, sizeof(Block)); 
+    new->data.block->statements = blk->statements;
+    new->data.block->len_statements = blk->len_statements;
     return new;
 }
 
@@ -465,6 +467,26 @@ Statement *expressionStatement(Parser *parser)
     return new;
 }
 
+Statement *declaration(Parser *parser);
+Block *block(Parser *parser){
+    size_t len_statements = 0, size_statements = 128;
+    Statement **statements = calloc(size_statements, sizeof(Statement *));
+
+    while(!check(parser, RIGHT_BRACE) && !isAtEnd_parser(parser)){
+        if(len_statements>=size_statements){
+            size_statements *= 2;
+            statements = realloc(statements, size_statements * sizeof(Statement *));
+        }
+        statements[len_statements++] = declaration(parser);
+    }
+    statements = realloc(statements, len_statements * sizeof(Statement *));
+    Block *blk = calloc(1, sizeof(Block));
+    blk->statements = statements;
+    blk->len_statements = len_statements;
+    consume(parser, RIGHT_BRACE, "Expect '}' after block.\n");
+    return blk;
+}
+
 Statement *statement(Parser *parser)
 {
     TokenType allowed = PRINT;
@@ -476,7 +498,11 @@ Statement *statement(Parser *parser)
     allowed = LEFT_BRACE;
     if (match_parser(parser, &allowed, 1))
     {
-        Statement *block_stmt = init_statement_block(NULL);
+        advance_parser(parser); // Consume { token
+        size_t len_statements = 0;
+        Block *blk = block(parser);
+        Statement *block_stmt = init_statement_block(blk);
+        return block_stmt;
     }
     return expressionStatement(parser);
 }
@@ -703,7 +729,7 @@ void print_literal(Literal *literal)
         }
         break;
     case STRING:
-        printf("%s", literal->data.string);
+        printf("%s\n", literal->data.string);
         break;
     default:
         fprintf(stderr, "print_literal for type %s not implemented yet\n", token_type_to_str(literal->token_type));

@@ -43,7 +43,14 @@ void visitVarStatement(Interpreter *interpreter, Statement *stmt)
     return;
 }
 
-Literal *visitAssignExpr(Interpreter*interpreter, Expression *expr){
+void executeBlock(Interpreter *interpreter, Block *blk, Environment *environment);
+void visitBlockStatement(Interpreter *interpreter, Statement *stmt)
+{
+    executeBlock(interpreter, stmt->data.block, init_environment(interpreter->env));
+}
+
+Literal *visitAssignExpr(Interpreter *interpreter, Expression *expr)
+{
     Literal *value = evaluate(interpreter, expr->as.assign.value, error_code);
     assign_environment(interpreter->env, expr->as.assign.name, value, error_code);
     return value;
@@ -258,6 +265,18 @@ Literal *visitBinaryExpr(Interpreter *interpreter, Expression *expr)
     return NULL;
 }
 
+void execute(Interpreter *interpreter, Statement *statement, int *error_code_param);
+void executeBlock(Interpreter *interpreter, Block *blk, Environment *environment)
+{
+    Environment *previous = interpreter->env;
+    interpreter->env = environment;
+    for (size_t i = 0; i < blk->len_statements; i++)
+    {
+        execute(interpreter, blk->statements[i], error_code);
+    }
+    interpreter->env = previous;
+}
+
 Literal *evaluate(Interpreter *interpreter, Expression *expr, int *error_code_param)
 {
     if (*error_code_param != 0)
@@ -283,7 +302,7 @@ Literal *evaluate(Interpreter *interpreter, Expression *expr, int *error_code_pa
         return visitVariableExpression(interpreter, expr);
         break;
     case EXPR_ASSIGN:
-        return visitAssignExpr(interpreter, expr);  
+        return visitAssignExpr(interpreter, expr);
     default:
         break;
     }
@@ -308,6 +327,9 @@ void execute(Interpreter *interpreter, Statement *statement, int *error_code_par
         break;
     case STMT_VAR:
         visitVarStatement(interpreter, statement);
+        break;
+    case STMT_BLOCK:
+        visitBlockStatement(interpreter, statement);
         break;
     default:
         printf("HOW THE FUCK DID YOU GET HERE\n");
