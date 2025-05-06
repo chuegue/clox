@@ -15,17 +15,24 @@ Scanner *init_scanner(char *file_contents)
     return scanner;
 }
 
-Literal *init_literal(TokenType type, void *data)
+Literal *init_literal(TokenType type, void *string_number, int bool_nil)
 {
     Literal *lit = calloc(1, sizeof(Literal));
     lit->token_type = type;
     switch (type)
     {
     case STRING:
-        lit->data.string = data;
+        lit->data.string = string_number;
         break;
     case NUMBER:
-        lit->data.number = data;
+        lit->data.number = string_number;
+        break;
+    case NIL:
+        lit->data.null = bool_nil;
+        break;
+    case TRUE:
+    case FALSE:
+        lit->data.bool_val = bool_nil;
         break;
 
     default:
@@ -39,15 +46,22 @@ void free_literal(Literal *lit)
     switch (lit->token_type)
     {
     case STRING:
-        free(lit->data.string);
-        lit->data.string = NULL;
+        if (lit->data.string)
+        {
+            free(lit->data.string);
+            lit->data.string = NULL;
+        }
         break;
     case NUMBER:
-        free(lit->data.number);
-        lit->data.number = NULL;
+        if (lit->data.number)
+        {
+            free(lit->data.number);
+            lit->data.number = NULL;
+        }
         break;
 
     default:
+        lit->data.bool_val = 0;
         break;
     }
     free(lit);
@@ -55,7 +69,7 @@ void free_literal(Literal *lit)
 
 void free_token(Token *tok)
 {
-    if (!tok)
+    if (tok == NULL)
     {
         return;
     }
@@ -163,7 +177,7 @@ void string(Scanner *scanner)
     advance(scanner);
     char *value = calloc(scanner->current - scanner->start + 2, sizeof(char));
     strncpy(value, scanner->source + scanner->start + 1, scanner->current - scanner->start - 2);
-    addToken(scanner, init_literal(STRING, value));
+    addToken(scanner, init_literal(STRING, value, 0));
 }
 
 int isDigit(char c)
@@ -194,10 +208,10 @@ void number(Scanner *scanner)
     }
     char *lexeme = calloc(scanner->current - scanner->start + 2, sizeof(char));
     strncpy(lexeme, scanner->source + scanner->start, scanner->current - scanner->start);
-    double *value = malloc(sizeof(double));
+    double *value = calloc(1, sizeof(double));
     *value = strtod(lexeme, (char **)NULL);
     free(lexeme);
-    addToken(scanner, init_literal(NUMBER, value));
+    addToken(scanner, init_literal(NUMBER, value, 0));
 }
 
 int isAlpha(char c)
@@ -255,7 +269,7 @@ void identifier(Scanner *scanner)
     strncpy(value, scanner->source + scanner->start, scanner->current - scanner->start);
     TokenType type = get_keyword_type(value);
     free(value);
-    addToken(scanner, init_literal(IDENTIFIER, NULL));
+    addToken(scanner, init_literal(type, NULL, 0));
 }
 
 Scanner *scanToken(char *file_contents)
@@ -271,34 +285,34 @@ Scanner *scanToken(char *file_contents)
             switch (c)
             {
             case '(':
-                addToken(scanner, init_literal(LEFT_PAREN, NULL));
+                addToken(scanner, init_literal(LEFT_PAREN, NULL, 0));
                 break;
             case ')':
-                addToken(scanner, init_literal(RIGHT_PAREN, NULL));
+                addToken(scanner, init_literal(RIGHT_PAREN, NULL, 0));
                 break;
             case '{':
-                addToken(scanner, init_literal(LEFT_BRACE, NULL));
+                addToken(scanner, init_literal(LEFT_BRACE, NULL, 0));
                 break;
             case '}':
-                addToken(scanner, init_literal(RIGHT_BRACE, NULL));
+                addToken(scanner, init_literal(RIGHT_BRACE, NULL, 0));
                 break;
             case ',':
-                addToken(scanner, init_literal(COMMA, NULL));
+                addToken(scanner, init_literal(COMMA, NULL, 0));
                 break;
             case '.':
-                addToken(scanner, init_literal(DOT, NULL));
+                addToken(scanner, init_literal(DOT, NULL, 0));
                 break;
             case '-':
-                addToken(scanner, init_literal(MINUS, NULL));
+                addToken(scanner, init_literal(MINUS, NULL, 0));
                 break;
             case '+':
-                addToken(scanner, init_literal(PLUS, NULL));
+                addToken(scanner, init_literal(PLUS, NULL, 0));
                 break;
             case ';':
-                addToken(scanner, init_literal(SEMICOLON, NULL));
+                addToken(scanner, init_literal(SEMICOLON, NULL, 0));
                 break;
             case '*':
-                addToken(scanner, init_literal(STAR, NULL));
+                addToken(scanner, init_literal(STAR, NULL, 0));
                 break;
             case '/':
                 if (match_scanner(scanner, '/'))
@@ -310,23 +324,23 @@ Scanner *scanToken(char *file_contents)
                 }
                 else
                 {
-                    addToken(scanner, init_literal(SLASH, NULL));
+                    addToken(scanner, init_literal(SLASH, NULL, 0));
                 }
                 break;
             case '"':
                 string(scanner);
                 break;
             case '!':
-                addToken(scanner, init_literal(match_scanner(scanner, '=') ? BANG_EQUAL : BANG, NULL));
+                addToken(scanner, init_literal(match_scanner(scanner, '=') ? BANG_EQUAL : BANG, NULL, 0));
                 break;
             case '=':
-                addToken(scanner, init_literal(match_scanner(scanner, '=') ? EQUAL_EQUAL : EQUAL, NULL));
+                addToken(scanner, init_literal(match_scanner(scanner, '=') ? EQUAL_EQUAL : EQUAL, NULL, 0));
                 break;
             case '<':
-                addToken(scanner, init_literal(match_scanner(scanner, '=') ? LESS_EQUAL : LESS, NULL));
+                addToken(scanner, init_literal(match_scanner(scanner, '=') ? LESS_EQUAL : LESS, NULL, 0));
                 break;
             case '>':
-                addToken(scanner, init_literal(match_scanner(scanner, '=') ? GREATER_EQUAL : GREATER, NULL));
+                addToken(scanner, init_literal(match_scanner(scanner, '=') ? GREATER_EQUAL : GREATER, NULL, 0));
                 break;
             case '#':
             case '$':
@@ -344,7 +358,7 @@ Scanner *scanToken(char *file_contents)
                 scanner->line++;
                 break;
             case EOF:
-                addToken(scanner, init_literal(EOF_LOX, NULL));
+                addToken(scanner, init_literal(EOF_LOX, NULL, 0));
                 return scanner;
                 break;
             default:
@@ -363,7 +377,7 @@ Scanner *scanToken(char *file_contents)
             }
         }
     }
-    addToken(scanner, init_literal(EOF_LOX, NULL));
+    addToken(scanner, init_literal(EOF_LOX, NULL, 0));
     return scanner;
 }
 

@@ -88,5 +88,8 @@ typedef struct Scanner_
 Scanner *scanToken(char *file_contents);
 char *token_type_to_str(TokenType type);
 void free_scanner(Scanner *scanner);
+void free_token(Token *tok);
+Literal *init_literal(TokenType type, void *string_number, int bool_nil);
+void free_literal(Literal *lit);
 
 #endif // __SCANNER__

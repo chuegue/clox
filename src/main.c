@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "scanner.h"
-// #include "parser.h"
+#include "parser.h"
 // #include "interpreter.h"
 
 char *read_file_contents(const char *filename)
@@ -61,7 +61,7 @@ void print_tokens(Scanner *scanner)
                 printf("%s %s %.1lf\n", token_type_to_str(token->literal->token_type), token->lexeme, number);
             }
             else
-            { // floatvoid print_expression(Expression *expr)
+            { // float
                 printf("%s %s %.15g\n", token_type_to_str(token->literal->token_type), token->lexeme, number);
             }
         }
@@ -89,8 +89,6 @@ int main(int argc, char *argv[])
     // printf("COMMAND: %s\n", command);
     if (strcmp(command, "tokenize") == 0)
     {
-        // You can use print statements as follows for debugging, they'll be visible when running tests.
-
         char *file_contents = read_file_contents(argv[2]);
 
         Scanner *scanner = scanToken(file_contents);
@@ -102,33 +100,37 @@ int main(int argc, char *argv[])
         free(file_contents);
         free_scanner(scanner);
     }
-    // else if (strcmp(command, "parse") == 0)
-    // {
-    //     // You can use print statements as follows for debugging, they'll be visible when running tests.
+    else if (strcmp(command, "parse") == 0)
+    {
+        char *file_contents = read_file_contents(argv[2]);
 
-    //     char *file_contents = read_file_contents(argv[2]);
+        Scanner *scanner = scanToken(file_contents);
+        print_tokens(scanner);
 
-    //     Scanner *scanner = scanToken(file_contents);
-    //     print_tokens(scanner);
+        if (scanner->number_tokens > 0)
+        {
+            Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);
+            size_t len_statements = 0;
+            Statement **statements = parse(parser, &len_statements, &error_code);
+            if (error_code != 0)
+            {
 
-    //     if (scanner->number_tokens > 0)
-    //     {
-    //         Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);
-    //         size_t len_statements = 0;
-    //         Statement **statements = parse(parser, &len_statements, &error_code);
-    //         if (error_code == 0)
-    //         {
-    //             // print_expression(expression);
-    //         }
-    //         printf("\n");
-    //     }
-    //     if (scanner->had_error == 1)
-    //     {
-    //         error_code = 65;
-    //     }
-    //     free(file_contents);
-    //     free_scanner(scanner);
-    // }
+                free_statements(statements, len_statements);
+                free_parser(parser);
+                free_scanner(scanner);
+                free(file_contents);
+                return error_code;
+            }
+            // for (size_t i = 0; i < len_statements; i++)
+            // {
+            //     print_statement(statements[i]);
+            // }
+            free_parser(parser);
+            free_statements(statements, len_statements);
+        }
+        free(file_contents);
+        free_scanner(scanner);
+    }
     // else if (strcmp(command, "evaluate") == 0)
     // {
     //     // You can use print statements as follows for debugging, they'll be visible when running tests.
