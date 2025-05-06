@@ -34,7 +34,8 @@ Expression *init_expression_literal(Literal *literal, ExpressionType expression_
     return expression;
 }
 
-Expression *init_expression_assign(Parser *parser, Token *name, Expression *value, ExpressionType type){
+Expression *init_expression_assign(Parser *parser, Token *name, Expression *value, ExpressionType type)
+{
     Expression *expression = calloc(1, sizeof(Expression));
 
     expression->as.assign.name = name;
@@ -383,20 +384,23 @@ Expression *equality(Parser *parser)
         return new Expr.Assign(name, value);
       }
 
-      error(equals, "Invalid assignment target."); 
+      error(equals, "Invalid assignment target.");
     }
 
     return expr;
   }
 */
-Expression *assignment(Parser *parser){
+Expression *assignment(Parser *parser)
+{
     Expression *expr = equality(parser);
     TokenType allowed = EQUAL;
-    if(match_parser(parser, &allowed, 1)){
+    if (match_parser(parser, &allowed, 1))
+    {
         Token *equals = previous(parser);
-        advance_parser(parser); //consume = token
-        Expression * value = assignment(parser);
-        if(expr->type == EXPR_VARIABLE){
+        advance_parser(parser); // consume = token
+        Expression *value = assignment(parser);
+        if (expr->type == EXPR_VARIABLE)
+        {
             Token *name = expr->as.variable.name;
             return init_expression_assign(parser, name, value, EXPR_ASSIGN);
         }
@@ -406,39 +410,50 @@ Expression *assignment(Parser *parser){
     return expr;
 }
 
-
 Expression *expression(Parser *parser)
 {
     return assignment(parser);
 }
 
-Statement *init_statement(ExpressionType type, Expression *expr_or_initializer, Token *name)
+Statement *init_statement_expr(Expression *expr)
 {
     Statement *new = calloc(1, sizeof(Statement));
-    new->type = type;
-    switch (type)
-    {
-    case STMT_EXPR:
-        new->data.expr.expression = expr_or_initializer;
-        return new;
-    case STMT_PRINT:
-        new->data.print.expression = expr_or_initializer;
-        return new;
-    case STMT_VAR:
-        new->data.var.name = name;
-        new->data.var.initializer = expr_or_initializer;
-        return new;
-        break;
-    }
-    printf("HOW THE FUCK DID YOU GET HERE\n");
+    new->type = STMT_EXPR;
+    new->data.expr.expression = expr;
+    return new;
+}
+
+Statement *init_statement_print(Expression *expr)
+{
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = STMT_PRINT;
+    new->data.print.expression = expr;
+    return new;
+}
+
+Statement *init_statement_var(Token *name, Expression *initializer)
+{
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = STMT_VAR;
+    new->data.var.name = name;
+    new->data.var.initializer = initializer;
+    return new;
+}
+
+Statement *init_statement_block(Statement **statements)
+{
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = STMT_BLOCK;
+    new->data.block_statements = statements;
+    return new;
 }
 
 Statement *printStatement(Parser *parser)
 {
     Expression *value = expression(parser);
-    //advance_parser(parser);
+    // advance_parser(parser);
     consume(parser, SEMICOLON, "Expect ';' after value.");
-    Statement *new = init_statement(STMT_PRINT, value, NULL);
+    Statement *new = init_statement_print(value);
     return new;
 }
 
@@ -446,17 +461,22 @@ Statement *expressionStatement(Parser *parser)
 {
     Expression *expr = expression(parser);
     consume(parser, SEMICOLON, "Expect ';' after expression.");
-    Statement *new = init_statement(STMT_EXPR, expr, NULL);
+    Statement *new = init_statement_expr(expr);
     return new;
 }
 
 Statement *statement(Parser *parser)
 {
-    TokenType allowed[] = {PRINT};
-    if (match_parser(parser, allowed, 1))
+    TokenType allowed = PRINT;
+    if (match_parser(parser, &allowed, 1))
     {
         advance_parser(parser); // Consume PRINT token
         return printStatement(parser);
+    }
+    allowed = LEFT_BRACE;
+    if (match_parser(parser, &allowed, 1))
+    {
+        Statement *block_stmt = init_statement_block(NULL);
     }
     return expressionStatement(parser);
 }
@@ -466,7 +486,7 @@ Statement *varDeclaration(Parser *parser)
     advance_parser(parser);
     Token *name = consume(parser, IDENTIFIER, "Expect variable name.");
 
-    Expression *initializer = init_expression_literal(init_literal(NIL,NULL,0), EXPR_LITERAL);
+    Expression *initializer = init_expression_literal(init_literal(NIL, NULL, 0), EXPR_LITERAL);
     TokenType allowed = EQUAL;
     if (match_parser(parser, &allowed, 1))
     {
@@ -479,7 +499,7 @@ Statement *varDeclaration(Parser *parser)
         }
     }
     consume(parser, SEMICOLON, "Expect ';' after variable declaration.");
-    Statement *ret_stmt = init_statement(STMT_VAR, initializer, name);
+    Statement *ret_stmt = init_statement_var(name, initializer);
     return ret_stmt;
 }
 
