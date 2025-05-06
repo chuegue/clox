@@ -1,36 +1,95 @@
+
+#include <string.h>
+#include <stdlib.h>
+
 #include "scanner.h"
 
 Scanner *init_scanner(char *file_contents)
 {
     Scanner *scanner = (Scanner *)calloc(1, sizeof(Scanner));
     scanner->source = strdup(file_contents);
-    scanner->tokens = (Token *)calloc(128, sizeof(Token));
+    scanner->tokens = (Token **)calloc(128, sizeof(Token *));
     scanner->size_tokens = 128;
     scanner->start = scanner->current = scanner->number_tokens = scanner->had_error = 0;
     scanner->line = 1;
     return scanner;
 }
 
+Literal *init_literal(TokenType type, void *data)
+{
+    Literal *lit = calloc(1, sizeof(Literal));
+    lit->token_type = type;
+    switch (type)
+    {
+    case STRING:
+        lit->data.string = data;
+        break;
+    case NUMBER:
+        lit->data.number = data;
+        break;
+
+    default:
+        break;
+    }
+    return lit;
+}
+
+void free_literal(Literal *lit)
+{
+    switch (lit->token_type)
+    {
+    case STRING:
+        free(lit->data.string);
+        lit->data.string = NULL;
+        break;
+    case NUMBER:
+        free(lit->data.number);
+        lit->data.number = NULL;
+        break;
+
+    default:
+        break;
+    }
+    free(lit);
+}
+
+void free_token(Token *tok)
+{
+    if (!tok)
+    {
+        return;
+    }
+    if (tok->lexeme)
+    {
+        free(tok->lexeme);
+        tok->lexeme = NULL;
+    }
+    if (tok->literal)
+    {
+        free_literal(tok->literal);
+        tok->literal = NULL;
+    }
+    free(tok);
+}
+
 void free_scanner(Scanner *scanner)
 {
     free(scanner->source);
-    for (size_t i = 0; i < scanner->number_tokens; i++)
+    scanner->source = NULL;
+    for (size_t i = 0; i < scanner->size_tokens; i++)
     {
-        free(scanner->tokens[i].lexeme);
-        if (scanner->tokens[i].literal != NULL)
-        {
-            free(scanner->tokens[i].literal);
-        }
+        free_token(scanner->tokens[i]);
+        scanner->tokens[i] = NULL;
     }
     free(scanner->tokens);
+    scanner->tokens = NULL;
     free(scanner);
 }
 
-Token *init_token(TokenType type, char *lexeme, void *literal, int line)
+Token *init_token(char *lexeme, Literal *literal, int line)
 {
     Token *token = (Token *)calloc(1, sizeof(Token));
-    token->type = type;
-    token->lexeme = strdup(lexeme);
+    token->lexeme = lexeme;
     token->literal = literal;
     token->line = line;
     return token;
@@ -41,24 +100,27 @@ char advance(Scanner *scanner)
     return scanner->source[scanner->current++];
 }
 
-void addToken(Scanner *scanner, TokenType type, void *literal)
+void addToken(Scanner *scanner, Literal *literal)
 {
     char *text;
-    if(type != EOF_LOX){
-    text = calloc(scanner->current - scanner->start + 2, sizeof(char));
-    strncpy(text, scanner->source + scanner->start, scanner->current - scanner->start);
-    }else{
-        text = "";
+    if (literal->token_type != EOF_LOX)
+    {
+        text = calloc(scanner->current - scanner->start + 2, sizeof(char));
+        strncpy(text, scanner->source + scanner->start, scanner->current - scanner->start);
+    }
+    else
+    {
+        text = calloc(1, sizeof(char));
     }
     if (scanner->number_tokens >= scanner->size_tokens)
     {
         fprintf(stderr, "Not implemented: increase tokens array size\n");
         exit(1);
     }
-    memcpy(&(scanner->tokens[scanner->number_tokens++]), init_token(type, text, literal, scanner->line), sizeof(Token));
+    scanner->tokens[scanner->number_tokens++] = init_token(text, literal, scanner->line);
 }
 
-int match(Scanner *scanner, char expected)
+int match_scanner(Scanner *scanner, char expected)
 {
     if (scanner->current >= strlen(scanner->source))
         return 0;
@@ -68,14 +130,14 @@ int match(Scanner *scanner, char expected)
     return 1;
 }
 
-int isAtEnd(Scanner *scanner)
+int isAtEnd_scanner(Scanner *scanner)
 {
     return scanner->current >= strlen(scanner->source);
 }
 
-char peek(Scanner *scanner)
+char peek_scanner(Scanner *scanner)
 {
-    if (isAtEnd(scanner))
+    if (isAtEnd_scanner(scanner))
     {
         return '\0';
     }
@@ -84,15 +146,15 @@ char peek(Scanner *scanner)
 
 void string(Scanner *scanner)
 {
-    while (peek(scanner) != '"' && !isAtEnd(scanner))
+    while (peek_scanner(scanner) != '"' && !isAtEnd_scanner(scanner))
     {
-        if (peek(scanner) == '\n')
+        if (peek_scanner(scanner) == '\n')
         {
             scanner->line++;
         }
         advance(scanner);
     }
-    if (isAtEnd(scanner))
+    if (isAtEnd_scanner(scanner))
     {
         fprintf(stderr, "[line %d] Error: Unterminated string.\n", scanner->line);
         scanner->had_error = 1;
@@ -101,7 +163,7 @@ void string(Scanner *scanner)
     advance(scanner);
     char *value = calloc(scanner->current - scanner->start + 2, sizeof(char));
     strncpy(value, scanner->source + scanner->start + 1, scanner->current - scanner->start - 2);
-    addToken(scanner, STRING, value);
+    addToken(scanner, init_literal(STRING, value));
 }
 
 int isDigit(char c)
@@ -118,14 +180,14 @@ char peekNext(Scanner *scanner)
 
 void number(Scanner *scanner)
 {
-    while (isDigit(peek(scanner)))
+    while (isDigit(peek_scanner(scanner)))
     {
         advance(scanner);
     }
-    if (peek(scanner) == '.' && isDigit(peekNext(scanner)))
+    if (peek_scanner(scanner) == '.' && isDigit(peekNext(scanner)))
     {
         advance(scanner);
-        while (isDigit(peek(scanner)))
+        while (isDigit(peek_scanner(scanner)))
         {
             advance(scanner);
         }
@@ -134,7 +196,8 @@ void number(Scanner *scanner)
     strncpy(lexeme, scanner->source + scanner->start, scanner->current - scanner->start);
     double *value = malloc(sizeof(double));
     *value = strtod(lexeme, (char **)NULL);
-    addToken(scanner, NUMBER, (void *)value);
+    free(lexeme);
+    addToken(scanner, init_literal(NUMBER, value));
 }
 
 int isAlpha(char c)
@@ -184,14 +247,15 @@ TokenType get_keyword_type(const char *text)
 
 void identifier(Scanner *scanner)
 {
-    while (isAlphanumeric(peek(scanner)))
+    while (isAlphanumeric(peek_scanner(scanner)))
     {
         advance(scanner);
     }
     char *value = calloc(scanner->current - scanner->start + 2, sizeof(char));
     strncpy(value, scanner->source + scanner->start, scanner->current - scanner->start);
     TokenType type = get_keyword_type(value);
-    addToken(scanner, type, NULL);
+    free(value);
+    addToken(scanner, init_literal(IDENTIFIER, NULL));
 }
 
 Scanner *scanToken(char *file_contents)
@@ -207,37 +271,37 @@ Scanner *scanToken(char *file_contents)
             switch (c)
             {
             case '(':
-                addToken(scanner, LEFT_PAREN, NULL);
+                addToken(scanner, init_literal(LEFT_PAREN, NULL));
                 break;
             case ')':
-                addToken(scanner, RIGHT_PAREN, NULL);
+                addToken(scanner, init_literal(RIGHT_PAREN, NULL));
                 break;
             case '{':
-                addToken(scanner, LEFT_BRACE, NULL);
+                addToken(scanner, init_literal(LEFT_BRACE, NULL));
                 break;
             case '}':
-                addToken(scanner, RIGHT_BRACE, NULL);
+                addToken(scanner, init_literal(RIGHT_BRACE, NULL));
                 break;
             case ',':
-                addToken(scanner, COMMA, NULL);
+                addToken(scanner, init_literal(COMMA, NULL));
                 break;
             case '.':
-                addToken(scanner, DOT, NULL);
+                addToken(scanner, init_literal(DOT, NULL));
                 break;
             case '-':
-                addToken(scanner, MINUS, NULL);
+                addToken(scanner, init_literal(MINUS, NULL));
                 break;
             case '+':
-                addToken(scanner, PLUS, NULL);
+                addToken(scanner, init_literal(PLUS, NULL));
                 break;
             case ';':
-                addToken(scanner, SEMICOLON, NULL);
+                addToken(scanner, init_literal(SEMICOLON, NULL));
                 break;
             case '*':
-                addToken(scanner, STAR, NULL);
+                addToken(scanner, init_literal(STAR, NULL));
                 break;
             case '/':
-                if (match(scanner, '/'))
+                if (match_scanner(scanner, '/'))
                 {
                     while (scanner->source[scanner->current] != '\n' && scanner->current < strlen(scanner->source))
                     {
@@ -246,23 +310,23 @@ Scanner *scanToken(char *file_contents)
                 }
                 else
                 {
-                    addToken(scanner, SLASH, NULL);
+                    addToken(scanner, init_literal(SLASH, NULL));
                 }
                 break;
             case '"':
                 string(scanner);
                 break;
             case '!':
-                addToken(scanner, match(scanner, '=') ? BANG_EQUAL : BANG, NULL);
+                addToken(scanner, init_literal(match_scanner(scanner, '=') ? BANG_EQUAL : BANG, NULL));
                 break;
             case '=':
-                addToken(scanner, match(scanner, '=') ? EQUAL_EQUAL : EQUAL, NULL);
+                addToken(scanner, init_literal(match_scanner(scanner, '=') ? EQUAL_EQUAL : EQUAL, NULL));
                 break;
             case '<':
-                addToken(scanner, match(scanner, '=') ? LESS_EQUAL : LESS, NULL);
+                addToken(scanner, init_literal(match_scanner(scanner, '=') ? LESS_EQUAL : LESS, NULL));
                 break;
             case '>':
-                addToken(scanner, match(scanner, '=') ? GREATER_EQUAL : GREATER, NULL);
+                addToken(scanner, init_literal(match_scanner(scanner, '=') ? GREATER_EQUAL : GREATER, NULL));
                 break;
             case '#':
             case '$':
@@ -280,7 +344,7 @@ Scanner *scanToken(char *file_contents)
                 scanner->line++;
                 break;
             case EOF:
-                addToken(scanner, EOF_LOX, NULL);
+                addToken(scanner, init_literal(EOF_LOX, NULL));
                 return scanner;
                 break;
             default:
@@ -299,12 +363,9 @@ Scanner *scanToken(char *file_contents)
             }
         }
     }
-    addToken(scanner, EOF_LOX, NULL);
+    addToken(scanner, init_literal(EOF_LOX, NULL));
     return scanner;
 }
-
-#include <string.h>
-#include <stdlib.h>
 
 char *token_type_to_str(TokenType type)
 {
@@ -312,125 +373,125 @@ char *token_type_to_str(TokenType type)
     switch (type)
     {
     case LEFT_PAREN:
-        text = strdup("LEFT_PAREN");
+        text = ("LEFT_PAREN");
         break;
     case RIGHT_PAREN:
-        text = strdup("RIGHT_PAREN");
+        text = ("RIGHT_PAREN");
         break;
     case LEFT_BRACE:
-        text = strdup("LEFT_BRACE");
+        text = ("LEFT_BRACE");
         break;
     case RIGHT_BRACE:
-        text = strdup("RIGHT_BRACE");
+        text = ("RIGHT_BRACE");
         break;
     case COMMA:
-        text = strdup("COMMA");
+        text = ("COMMA");
         break;
     case DOT:
-        text = strdup("DOT");
+        text = ("DOT");
         break;
     case MINUS:
-        text = strdup("MINUS");
+        text = ("MINUS");
         break;
     case PLUS:
-        text = strdup("PLUS");
+        text = ("PLUS");
         break;
     case SEMICOLON:
-        text = strdup("SEMICOLON");
+        text = ("SEMICOLON");
         break;
     case SLASH:
-        text = strdup("SLASH");
+        text = ("SLASH");
         break;
     case STAR:
-        text = strdup("STAR");
+        text = ("STAR");
         break;
     case BANG:
-        text = strdup("BANG");
+        text = ("BANG");
         break;
     case BANG_EQUAL:
-        text = strdup("BANG_EQUAL");
+        text = ("BANG_EQUAL");
         break;
     case EQUAL:
-        text = strdup("EQUAL");
+        text = ("EQUAL");
         break;
     case EQUAL_EQUAL:
-        text = strdup("EQUAL_EQUAL");
+        text = ("EQUAL_EQUAL");
         break;
     case LESS:
-        text = strdup("LESS");
+        text = ("LESS");
         break;
     case LESS_EQUAL:
-        text = strdup("LESS_EQUAL");
+        text = ("LESS_EQUAL");
         break;
     case GREATER:
-        text = strdup("GREATER");
+        text = ("GREATER");
         break;
     case GREATER_EQUAL:
-        text = strdup("GREATER_EQUAL");
+        text = ("GREATER_EQUAL");
         break;
     case STRING:
-        text = strdup("STRING");
+        text = ("STRING");
         break;
     case NUMBER:
-        text = strdup("NUMBER");
+        text = ("NUMBER");
         break;
     case IDENTIFIER:
-        text = strdup("IDENTIFIER");
+        text = ("IDENTIFIER");
         break;
     case AND:
-        text = strdup("AND");
+        text = ("AND");
         break;
     case CLASS:
-        text = strdup("CLASS");
+        text = ("CLASS");
         break;
     case ELSE:
-        text = strdup("ELSE");
+        text = ("ELSE");
         break;
     case FALSE:
-        text = strdup("FALSE");
+        text = ("FALSE");
         break;
     case FOR:
-        text = strdup("FOR");
+        text = ("FOR");
         break;
     case FUN:
-        text = strdup("FUN");
+        text = ("FUN");
         break;
     case IF:
-        text = strdup("IF");
+        text = ("IF");
         break;
     case NIL:
-        text = strdup("NIL");
+        text = ("NIL");
         break;
     case OR:
-        text = strdup("OR");
+        text = ("OR");
         break;
     case PRINT:
-        text = strdup("PRINT");
+        text = ("PRINT");
         break;
     case RETURN:
-        text = strdup("RETURN");
+        text = ("RETURN");
         break;
     case SUPER:
-        text = strdup("SUPER");
+        text = ("SUPER");
         break;
     case THIS:
-        text = strdup("THIS");
+        text = ("THIS");
         break;
     case TRUE:
-        text = strdup("TRUE");
+        text = ("TRUE");
         break;
     case VAR:
-        text = strdup("VAR");
+        text = ("VAR");
         break;
     case WHILE:
-        text = strdup("WHILE");
+        text = ("WHILE");
         break;
     case EOF_LOX:
-        text = strdup("EOF");
+        text = ("EOF");
         break;
 
     default:
-        text = strdup("NOT_IMPLEMENTED");
+        text = ("NOT_IMPLEMENTED");
         break;
     }
     return text;

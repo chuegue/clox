@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum TokenType_
+typedef enum 
 {
     LEFT_PAREN,
     RIGHT_PAREN,
@@ -48,23 +48,35 @@ typedef enum TokenType_
     EOF_LOX,
 } TokenType;
 
-typedef struct {
-    const char* keyword;
+typedef struct
+{
+    const char *keyword;
     TokenType type;
 } Keyword;
 
+typedef struct
+{
+    TokenType token_type;
+    union
+    {
+        int bool_val;
+        int null;
+        char *string;
+        double *number;
+    } data;
+} Literal;
+
 typedef struct Token_
 {
-    TokenType type;
     char *lexeme;
-    void *literal; // temp line
+    Literal *literal;
     int line;
 } Token;
 
 typedef struct Scanner_
 {
     char *source;
-    Token *tokens;
+    Token **tokens; // array of Token*
     size_t number_tokens;
     size_t size_tokens;
     int start;
