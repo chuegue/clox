@@ -37,7 +37,7 @@ struct Expression_
 
 typedef struct
 {
-    Token **tokens; //array of Token*
+    Token **tokens; // array of Token*
     int current;
 } Parser;
 
@@ -51,8 +51,23 @@ typedef enum
 typedef struct
 {
     StatementType type;
-    Expression *expression1;
-    Expression *expression2;
+    union
+    {
+        struct
+        {
+            Expression *expression;
+        } expr;
+        struct
+        {
+            Expression *expression;
+        } print;
+        struct
+        {
+            Token *name;
+            Expression *initializer;
+        } var;
+    } data;
+
 } Statement;
 
 Parser *init_parser(Token **tokens, size_t len_tokens);
@@ -60,6 +75,7 @@ Statement **parse(Parser *parser, size_t *len_statements, int *error_return);
 void print_expression(Expression *expr);
 void print_literal(Literal *literal);
 void print_statement(Statement *stmt);
+Token *init_token(char *lexeme, Literal *literal, int line);
 void free_statements(Statement **stmts, size_t len_statements);
 void free_parser(Parser *parser);
 #endif //__PARSER__

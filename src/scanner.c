@@ -22,6 +22,7 @@ Literal *init_literal(TokenType type, void *string_number, int bool_nil)
     switch (type)
     {
     case STRING:
+    case IDENTIFIER:
         lit->data.string = string_number;
         break;
     case NUMBER:
@@ -269,7 +270,7 @@ void identifier(Scanner *scanner)
     strncpy(value, scanner->source + scanner->start, scanner->current - scanner->start);
     TokenType type = get_keyword_type(value);
     free(value);
-    addToken(scanner, init_literal(type, NULL, 0));
+    addToken(scanner, init_literal(type, value, 0));
 }
 
 Scanner *scanToken(char *file_contents)

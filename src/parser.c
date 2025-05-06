@@ -16,6 +16,15 @@ Expression *init_expression_binary(Expression *left, Token *operator, Expression
     return expression;
 }
 
+Expression *init_expression_variable(Token *name, ExpressionType type)
+{
+    Expression *expression = calloc(1, sizeof(Expression));
+
+    expression->as.variable.name = name;
+    expression->type = type;
+    return expression;
+}
+
 Expression *init_expression_literal(Literal *literal, ExpressionType expression_type)
 {
     Expression *expression = calloc(1, sizeof(Expression));
@@ -82,10 +91,24 @@ void free_statement(Statement *stmt)
     {
         return;
     }
-    free_expression(stmt->expression1);
-    stmt->expression1 = NULL;
-    free_expression(stmt->expression2);
-    stmt->expression1 = NULL;
+    switch (stmt->type)
+    {
+    case STMT_EXPR:
+        free_expression(stmt->data.expr.expression);
+        stmt->data.expr.expression = NULL;
+    case STMT_PRINT:
+        free_expression(stmt->data.print.expression);
+        stmt->data.print.expression = NULL;
+        break;
+    case STMT_VAR:
+        // free_token(stmt->data.var.name);
+        // stmt->data.var.name = NULL;
+        free_expression(stmt->data.var.initializer);
+        stmt->data.var.initializer = NULL;
+        break;
+    default:
+        break;
+    }
     free(stmt);
 }
 
@@ -261,9 +284,7 @@ Expression *primary(Parser *parser)
     if (match_parser(parser, &allowed_type, 1))
     {
         Token *name = advance_parser(parser);
-        Expression *var_expr = calloc(1, sizeof(Expression));
-        var_expr->type = EXPR_VARIABLE;
-        var_expr->as.variable.name = name;
+        Expression *var_expr = init_expression_variable(name, EXPR_VARIABLE);
         return var_expr;
 
         // advance_parser(parser); // consume IDENTIFIER
@@ -346,21 +367,21 @@ Expression *expression(Parser *parser)
     return equality(parser);
 }
 
-Statement *init_statement(ExpressionType type, Expression *stmt1, Expression *stmt2)
+Statement *init_statement(ExpressionType type, Expression *expr_or_initializer, Token *name)
 {
     Statement *new = calloc(1, sizeof(Statement));
     new->type = type;
     switch (type)
     {
     case STMT_EXPR:
-    case STMT_PRINT:
-        new->expression1 = stmt1;
-        new->expression2 = NULL;
+        new->data.expr.expression = expr_or_initializer;
         return new;
-        break;
+    case STMT_PRINT:
+        new->data.print.expression = expr_or_initializer;
+        return new;
     case STMT_VAR:
-        new->expression1 = stmt1;
-        new->expression2 = stmt2;
+        new->data.var.name = name;
+        new->data.var.initializer = expr_or_initializer;
         return new;
         break;
     }
@@ -370,7 +391,7 @@ Statement *init_statement(ExpressionType type, Expression *stmt1, Expression *st
 Statement *printStatement(Parser *parser)
 {
     Expression *value = expression(parser);
-    // advance_parser(parser);
+    //advance_parser(parser);
     consume(parser, SEMICOLON, "Expect ';' after value.");
     Statement *new = init_statement(STMT_PRINT, value, NULL);
     return new;
@@ -379,7 +400,7 @@ Statement *printStatement(Parser *parser)
 Statement *expressionStatement(Parser *parser)
 {
     Expression *expr = expression(parser);
-    consume(parser, SEMICOLON, "Expect ';' after value.");
+    consume(parser, SEMICOLON, "Expect ';' after expression.");
     Statement *new = init_statement(STMT_EXPR, expr, NULL);
     return new;
 }
@@ -400,26 +421,21 @@ Statement *varDeclaration(Parser *parser)
     advance_parser(parser);
     Token *name = consume(parser, IDENTIFIER, "Expect variable name.");
 
-    Expression *initializer = NULL;
+    Expression *initializer = init_expression_literal(init_literal(NIL,NULL,0), EXPR_LITERAL);
     TokenType allowed = EQUAL;
     if (match_parser(parser, &allowed, 1))
     {
         advance_parser(parser);
+        free_expression(initializer);
         initializer = expression(parser);
         if (error_return_global != 0)
         {
             return NULL;
         }
     }
-    else
-    {
-        Literal *nil_literal = init_literal(NIL, NULL, 1);
-        initializer = init_expression_literal(nil_literal, EXPR_LITERAL);
-    }
     consume(parser, SEMICOLON, "Expect ';' after variable declaration.");
-    Literal *name_literal = name->literal;
-    // Literal *name_literal = init_literal(STRING, name->lexeme, 0);
-    return init_statement(STMT_VAR, init_expression_literal(name_literal, EXPR_LITERAL), initializer);
+    Statement *ret_stmt = init_statement(STMT_VAR, init_expression_literal(initializer->as.literal, initializer->type), name);
+    return ret_stmt;
 }
 
 Statement *declaration(Parser *parser)
@@ -451,7 +467,9 @@ Statement **parse(Parser *parser, size_t *len_statements, int *error_return)
             statements = realloc(statements, size_statements * (sizeof(Statement *)));
         }
         if (error_return_global != 0)
+        {
             break;
+        }
         Statement *stmt = declaration(parser);
         statements[current_statements++] = stmt;
     }
@@ -578,8 +596,21 @@ void print_expression(Expression *expr)
 
 void print_statement(Statement *stmt)
 {
-    print_expression(stmt->expression1);
-    print_expression(stmt->expression2);
+    switch (stmt->type)
+    {
+    case STMT_EXPR:
+        print_expression(stmt->data.expr.expression);
+        break;
+    case STMT_PRINT:
+        print_expression(stmt->data.print.expression);
+        break;
+    case STMT_VAR:
+        printf("%s", stmt->data.var.name->lexeme);
+        print_expression(stmt->data.var.initializer);
+        break;
+    default:
+        break;
+    }
     printf("\n");
 }
 
