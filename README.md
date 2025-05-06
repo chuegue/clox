@@ -4,6 +4,11 @@
 This program implements a lox interpreter in C. It can (as of now) tokenize, parse, and execute print statements. This interpreter is mostly inspired by the one in Crafting Interpreters.
 
 
+## Features
+
+- Tokenizes, parses, and runs lox scripts
+- Can interpret global variables, arithmetic, logic, andprint statements
+
 
 ## Acknowledgements
 
