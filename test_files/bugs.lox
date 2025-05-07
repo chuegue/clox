@@ -1,15 +1,6 @@
-print "hi" or 2; // "hi".
-print nil or "yes"; // "yes".
-print "hi" and 2; // "hi"
-print false and "yes"; // "yes"
-
 var a = 9;
-if(a == 69){
-    print "truthy";
-    a = 0;
-}else{
-    print "falsey";
-    a = 1;
+var b = 8;
+if(a > 8 and b == 8){
+    print "both truthy";
 }
 print a;
-print "";

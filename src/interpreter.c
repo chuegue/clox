@@ -87,6 +87,7 @@ Literal *visitGroupingExpr(Interpreter *interpreter, Expression *expr)
 
 int isTruthy(Literal *object)
 {
+    if(!object){return 0;}
     if (object->token_type == NIL && object->data.null == 1)
     {
         return 0;
@@ -282,13 +283,21 @@ Literal *visitBinaryExpr(Interpreter *interpreter, Expression *expr)
 Literal *visitLogicalExpr(Interpreter *interpreter, Expression *expr)
 {
     Literal *left = evaluate(interpreter, expr->as.binary.left, error_code);
-
-    if(expr->as.binary.operator->literal->token_type == OR){
-        if(isTruthy(left)){
+    if (*error_code != 0)
+    {
+        return NULL;
+    }
+    if (expr->as.binary.operator->literal->token_type == OR)
+    {
+        if (isTruthy(left))
+        {
             return left;
         }
-    }else{
-        if(!isTruthy(left)){
+    }
+    else
+    {
+        if (!isTruthy(left))
+        {
             return left;
         }
     }
@@ -321,7 +330,8 @@ Literal *evaluate(Interpreter *interpreter, Expression *expr, int *error_code_pa
         return visitLiteralExpr(interpreter, expr);
         break;
     case EXPR_BINARY:
-        if(expr->as.binary.operator->literal->token_type == OR || expr->as.binary.operator->literal->token_type == AND){
+        if (expr->as.binary.operator->literal->token_type == OR || expr->as.binary.operator->literal->token_type == AND)
+        {
             return visitLogicalExpr(interpreter, expr);
         }
         return visitBinaryExpr(interpreter, expr);
