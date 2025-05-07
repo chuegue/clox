@@ -5,6 +5,9 @@
 int *error_code;
 
 Literal *evaluate(Interpreter *interpreter, Expression *expr, int *error_code);
+void executeBlock(Interpreter *interpreter, Block *blk, Environment *environment);
+void execute(Interpreter *interpreter, Statement *statement, int *error_code_param);
+int isTruthy(Literal *object);
 
 Interpreter *init_interpreter()
 {
@@ -25,6 +28,18 @@ void visitExpressionStatement(Interpreter *interpreter, Statement *stmt)
     evaluate(interpreter, stmt->data.expr.expression, error_code);
 }
 
+void visitIfStatement(Interpreter *interpreter, Statement *stmt)
+{
+    if (isTruthy(evaluate(interpreter, stmt->data.if_stmt.condition, error_code)))
+    {
+        execute(interpreter, stmt->data.if_stmt.thenBranch, error_code);
+    }
+    else if (stmt->data.if_stmt.elseBranch != NULL)
+    {
+        execute(interpreter, stmt->data.if_stmt.elseBranch, error_code);
+    }
+}
+
 void visitPrintStatement(Interpreter *interpreter, Statement *stmt)
 {
     Literal *value = evaluate(interpreter, stmt->data.print.expression, error_code);
@@ -43,7 +58,6 @@ void visitVarStatement(Interpreter *interpreter, Statement *stmt)
     return;
 }
 
-void executeBlock(Interpreter *interpreter, Block *blk, Environment *environment);
 void visitBlockStatement(Interpreter *interpreter, Statement *stmt)
 {
     executeBlock(interpreter, stmt->data.block, init_environment(interpreter->env));
@@ -265,7 +279,22 @@ Literal *visitBinaryExpr(Interpreter *interpreter, Expression *expr)
     return NULL;
 }
 
-void execute(Interpreter *interpreter, Statement *statement, int *error_code_param);
+Literal *visitLogicalExpr(Interpreter *interpreter, Expression *expr)
+{
+    Literal *left = evaluate(interpreter, expr->as.binary.left, error_code);
+
+    if(expr->as.binary.operator->literal->token_type == OR){
+        if(isTruthy(left)){
+            return left;
+        }
+    }else{
+        if(!isTruthy(left)){
+            return left;
+        }
+    }
+    return evaluate(interpreter, expr->as.binary.right, error_code);
+}
+
 void executeBlock(Interpreter *interpreter, Block *blk, Environment *environment)
 {
     Environment *previous = interpreter->env;
@@ -292,6 +321,9 @@ Literal *evaluate(Interpreter *interpreter, Expression *expr, int *error_code_pa
         return visitLiteralExpr(interpreter, expr);
         break;
     case EXPR_BINARY:
+        if(expr->as.binary.operator->literal->token_type == OR || expr->as.binary.operator->literal->token_type == AND){
+            return visitLogicalExpr(interpreter, expr);
+        }
         return visitBinaryExpr(interpreter, expr);
         break;
     case EXPR_GROUPING:
@@ -333,8 +365,11 @@ void execute(Interpreter *interpreter, Statement *statement, int *error_code_par
     case STMT_BLOCK:
         visitBlockStatement(interpreter, statement);
         break;
+    case STMT_IF:
+        visitIfStatement(interpreter, statement);
+        break;
     default:
-        printf("HOW THE FUCK DID YOU GET HERE\n");
+        printf("HOW THE FUCK DID YOU GET HERE execute()\n");
         break;
     }
 }

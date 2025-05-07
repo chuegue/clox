@@ -49,6 +49,7 @@ void free_literal(Literal *lit)
     case STRING:
         if (lit->data.string)
         {
+            //fprintf(stderr, "Freeing string literal %s\n", lit->data.string);
             free(lit->data.string);
             lit->data.string = NULL;
         }
@@ -56,13 +57,22 @@ void free_literal(Literal *lit)
     case NUMBER:
         if (lit->data.number)
         {
+            //fprintf(stderr, "Freeing number literal %lf\n", *lit->data.number);
             free(lit->data.number);
             lit->data.number = NULL;
         }
         break;
 
     default:
-        lit->data.bool_val = 0;
+        if (lit->token_type == TRUE || lit->token_type == FALSE)
+        {
+            //fprintf(stderr, "Freeing bool literal %d\n", lit->data.bool_val);
+        }
+        else if(lit->token_type == NIL)
+        {
+            //fprintf(stderr, "Freeing NIL literal %d\n", lit->data.null);
+        }
+        lit->data.bool_val = -1;
         break;
     }
     free(lit);
@@ -269,8 +279,9 @@ void identifier(Scanner *scanner)
     char *value = calloc(scanner->current - scanner->start + 2, sizeof(char));
     strncpy(value, scanner->source + scanner->start, scanner->current - scanner->start);
     TokenType type = get_keyword_type(value);
-    free(value);
     addToken(scanner, init_literal(type, value, 0));
+    free(value);
+    value = NULL;
 }
 
 Scanner *scanToken(char *file_contents)

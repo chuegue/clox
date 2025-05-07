@@ -88,10 +88,20 @@ int main(int argc, char *argv[])
     }
 
     const char *command = argv[1];
-    // printf("COMMAND: %s\n", command);
+
+    char *file_contents = read_file_contents(argv[2]);
+    int debug = 0;
+
+    if (argc >= 4)
+    {
+        debug = strcmp(argv[3], "-d") == 0;
+    }
+    if (debug)
+    {
+        printf("COMMAND: %s\n", command);
+    }
     if (strcmp(command, "tokenize") == 0)
     {
-        char *file_contents = read_file_contents(argv[2]);
 
         Scanner *scanner = scanToken(file_contents);
         print_tokens(scanner);
@@ -104,8 +114,6 @@ int main(int argc, char *argv[])
     }
     else if (strcmp(command, "parse") == 0)
     {
-        char *file_contents = read_file_contents(argv[2]);
-
         Scanner *scanner = scanToken(file_contents);
         print_tokens(scanner);
 
@@ -133,37 +141,13 @@ int main(int argc, char *argv[])
         free(file_contents);
         free_scanner(scanner);
     }
-    // else if (strcmp(command, "evaluate") == 0)
-    // {
-    //     // You can use print statements as follows for debugging, they'll be visible when running tests.
-
-    //     char *file_contents = read_file_contents(argv[2]);
-
-    //     Scanner *scanner = scanToken(file_contents);
-    //     print_tokens(scanner);
-
-    //     if (scanner->number_tokens > 0)
-    //     {
-    //         Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);
-    //         size_t len_statements = 0;
-    //         Statement **statements = parse(parser, &len_statements, &error_code);
-    //         //Literal *evaluation = evaluate(statements[0]->expression1, &error_code);
-    //         if (error_code == 70)
-    //         {
-    //             return error_code;
-    //         }
-    //         //print_literal(evaluation);
-    //     }
-    //     free(file_contents);
-    //     free_scanner(scanner);
-    // }
     else if (strcmp(command, "run") == 0)
     {
-        char *file_contents = read_file_contents(argv[2]);
-
         Scanner *scanner = scanToken(file_contents);
-        //print_tokens(scanner);
-
+        if (debug)
+        {
+            print_tokens(scanner);
+        }
         if (scanner->number_tokens > 0)
         {
             Parser *parser = init_parser(scanner->tokens, scanner->number_tokens);

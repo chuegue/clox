@@ -5,6 +5,12 @@
 
 int error_return_global = 0;
 
+
+void free_statement(Statement *stmt);
+Expression *expression(Parser *parser);
+Statement *statement(Parser *parser);
+Statement *declaration(Parser *parser);
+
 Expression *init_expression_binary(Expression *left, Token *operator, Expression *right, ExpressionType expression_type)
 {
     Expression *expression = calloc(1, sizeof(Expression));
@@ -95,9 +101,10 @@ void free_expression(Expression *expr)
     free(expr);
 }
 
-void free_statement(Statement *stmt);
-void free_block(Block *blk){
-    for(size_t i = 0; i < blk->len_statements; i++){
+void free_block(Block *blk)
+{
+    for (size_t i = 0; i < blk->len_statements; i++)
+    {
         free_statement(blk->statements[i]);
         blk->statements[i] = NULL;
     }
@@ -131,7 +138,16 @@ void free_statement(Statement *stmt)
         free_block(stmt->data.block);
         stmt->data.block = NULL;
         break;
+    case STMT_IF:
+        free_expression(stmt->data.if_stmt.condition);
+        stmt->data.if_stmt.condition = NULL;
+        free_statement(stmt->data.if_stmt.thenBranch);
+        stmt->data.if_stmt.thenBranch = NULL;
+        free_statement(stmt->data.if_stmt.elseBranch);
+        stmt->data.if_stmt.elseBranch = NULL;
+        break;
     default:
+        fprintf(stderr, "Free statement unimplememted for this kind of statement: %d\n", stmt->type);
         break;
     }
     free(stmt);
@@ -243,9 +259,6 @@ void synchronize(Parser *parser)
     }
 }
 
-Expression *expression(Parser *parser);
-// primary        → NUMBER | STRING | "true" | "false" | "nil"
-// | "(" expression ")" ;
 Expression *primary(Parser *parser)
 {
     Expression *expression_literal = NULL;
@@ -319,8 +332,6 @@ Expression *primary(Parser *parser)
     return NULL;
 }
 
-// unary          → ( "!" | "-" ) unary
-// | primary ;
 Expression *unary(Parser *parser)
 {
     TokenType allowed_Types[] = {BANG, MINUS};
@@ -372,7 +383,6 @@ Expression *comparison(Parser *parser)
     return expr;
 }
 
-// equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 Expression *equality(Parser *parser)
 {
     Expression *expr = comparison(parser);
@@ -386,28 +396,35 @@ Expression *equality(Parser *parser)
     return expr;
 }
 
-/*
-  private Expr assignment() {
-    Expr expr = equality();
+Expression *and(Parser *parser){
+    Expression *expr = equality(parser);
 
-    if (match(EQUAL)) {
-      Token equals = previous();
-      Expr value = assignment();
-
-      if (expr instanceof Expr.Variable) {
-        Token name = ((Expr.Variable)expr).name;
-        return new Expr.Assign(name, value);
-      }
-
-      error(equals, "Invalid assignment target.");
+    TokenType allowed = AND;
+    while(match_parser(parser, &allowed, 1)){
+        advance_parser(parser); //consume AND token
+        Token *operator = previous(parser);
+        Expression *right = equality(parser);
+        expr = init_expression_binary(expr, operator, right, EXPR_BINARY);
     }
-
     return expr;
-  }
-*/
+}
+
+Expression *or(Parser *parser){
+    Expression *expr = and(parser);
+
+    TokenType allowed = OR;
+    while(match_parser(parser, &allowed, 1)){
+        advance_parser(parser); //consume OR token
+        Token *operator = previous(parser);
+        Expression *right = and(parser);
+        expr = init_expression_binary(expr, operator, right, EXPR_BINARY);
+    }
+    return expr;
+}
+
 Expression *assignment(Parser *parser)
 {
-    Expression *expr = equality(parser);
+    Expression *expr = or(parser);
     TokenType allowed = EQUAL;
     if (match_parser(parser, &allowed, 1))
     {
@@ -463,6 +480,16 @@ Statement *init_statement_block(Block *blk)
     return new;
 }
 
+Statement *init_statement_if(Expression *condition, Statement *thenBranch, Statement *elseBranch)
+{
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = STMT_IF;
+    new->data.if_stmt.condition = condition;
+    new->data.if_stmt.thenBranch = thenBranch;
+    new->data.if_stmt.elseBranch = elseBranch;
+    return new;
+}
+
 Statement *printStatement(Parser *parser)
 {
     Expression *value = expression(parser);
@@ -480,7 +507,6 @@ Statement *expressionStatement(Parser *parser)
     return new;
 }
 
-Statement *declaration(Parser *parser);
 Block *block(Parser *parser)
 {
     size_t len_statements = 0, size_statements = 128;
@@ -503,6 +529,23 @@ Block *block(Parser *parser)
     return blk;
 }
 
+Statement *ifStatement(Parser *parser)
+{
+    consume(parser, LEFT_PAREN, "Exprect '(' after if.\n");
+    Expression *condition = expression(parser);
+    consume(parser, RIGHT_PAREN, "Exprect ')' after if condition.\n");
+    Statement *thenBranch = statement(parser);
+    Statement *elseBranch = NULL;
+    TokenType allowed = ELSE;
+    if (match_parser(parser, &allowed, 1))
+    {
+        advance_parser(parser); //consume ELSE token
+        elseBranch = statement(parser);
+    }
+    Statement *ret = init_statement_if(condition, thenBranch, elseBranch);
+    return ret;
+}
+
 Statement *statement(Parser *parser)
 {
     TokenType allowed = PRINT;
@@ -520,6 +563,12 @@ Statement *statement(Parser *parser)
         Statement *block_stmt = init_statement_block(blk);
         return block_stmt;
     }
+    allowed = IF;
+    if (match_parser(parser, &allowed, 1))
+    {
+        advance_parser(parser); // consume IF token
+        return ifStatement(parser);
+    }
     return expressionStatement(parser);
 }
 
@@ -528,7 +577,7 @@ Statement *varDeclaration(Parser *parser)
     advance_parser(parser);
     Token *name = consume(parser, IDENTIFIER, "Expect variable name.");
 
-    Expression *initializer = init_expression_literal(init_literal(NIL, NULL, 0), EXPR_LITERAL);
+    Expression *initializer = init_expression_literal(init_literal(NIL, NULL, 1), EXPR_LITERAL);
     TokenType allowed = EQUAL;
     if (match_parser(parser, &allowed, 1))
     {

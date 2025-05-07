@@ -54,6 +54,7 @@ typedef enum
     STMT_PRINT,
     STMT_VAR,
     STMT_BLOCK,
+    STMT_IF,
 } StatementType;
 
 typedef struct Statement_ Statement;
@@ -80,7 +81,12 @@ typedef struct Statement_
             Token *name;
             Expression *initializer;
         } var;
-        Block *block; //list of Statement*
+        Block *block; 
+        struct {
+            Expression *condition;
+            Statement *thenBranch;
+            Statement *elseBranch;
+        } if_stmt;
     } data;
 
 } Statement;
