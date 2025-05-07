@@ -139,8 +139,8 @@ void addToken(Scanner *scanner, Literal *literal)
     }
     if (scanner->number_tokens >= scanner->size_tokens)
     {
-        fprintf(stderr, "Not implemented: increase tokens array size\n");
-        exit(1);
+        scanner->size_tokens *= 2;
+        scanner->tokens = realloc(scanner->tokens, scanner->size_tokens * sizeof(Token *));
     }
     scanner->tokens[scanner->number_tokens++] = init_token(text, literal, scanner->line);
 }

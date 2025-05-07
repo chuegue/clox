@@ -9,6 +9,7 @@ void free_statement(Statement *stmt);
 Expression *expression(Parser *parser);
 Statement *statement(Parser *parser);
 Statement *declaration(Parser *parser);
+Statement *varDeclaration(Parser *parser);
 
 Expression *init_expression_binary(Expression *left, Token *operator, Expression *right, ExpressionType expression_type)
 {
@@ -566,12 +567,73 @@ Statement *ifStatement(Parser *parser)
 
 Statement *whileStatement(Parser *parser)
 {
-    consume(parser, LEFT_PAREN, "Expect '(' after 'while'.");
+    consume(parser, LEFT_PAREN, "Expect '(' after 'while'.\n");
     Expression *condition = expression(parser);
-    consume(parser, RIGHT_PAREN, "Expect ')' after condition.");
+    consume(parser, RIGHT_PAREN, "Expect ')' after condition.\n");
     Statement *body = statement(parser);
     Statement *ret = init_statement_while(condition, body);
     return ret;
+}
+
+Statement *forStatement(Parser *parser)
+{
+    consume(parser, LEFT_PAREN, "Expect '(' after 'for'.\n");
+    Statement *initializer;
+    TokenType semicolon = SEMICOLON, var = VAR;
+    if (match_parser(parser, &semicolon, 1))
+    {
+        initializer = NULL;
+    }
+    else if (match_parser(parser, &var, 1))
+    {
+        initializer = varDeclaration(parser);
+    }
+    else
+    {
+        initializer = expressionStatement(parser);
+    }
+
+    Expression *condition = NULL;
+    if (!check(parser, SEMICOLON))
+    {
+        condition = expression(parser);
+    }
+    consume(parser, SEMICOLON, "Expect ';' after loop condition.");
+
+    Expression *increment = NULL;
+    if (!check(parser, RIGHT_PAREN))
+    {
+        increment = expression(parser);
+    }
+    consume(parser, RIGHT_PAREN, "Expect ')' after for clauses.\n");
+
+    Statement *body = statement(parser);
+    if (increment != NULL)
+    {
+        Statement **body_and_increment = calloc(2, sizeof(Statement *));
+        body_and_increment[0] = body;
+        body_and_increment[1] = init_statement_expr(increment);
+        Block *body_inc = calloc(1, sizeof(Block));
+        body_inc->statements = body_and_increment;
+        body_inc->len_statements = 2;
+        body = init_statement_block(body_inc);
+    }
+    if (condition == NULL)
+    {
+        Literal *tru = init_literal(TRUE, NULL, 1);
+        condition = init_expression_literal(tru, EXPR_LITERAL);
+    }
+    body = init_statement_while(condition, body);
+    if(initializer != NULL){
+        Statement **initializer_and_body = calloc(2, sizeof(Statement *));
+        initializer_and_body[0] = initializer;
+        initializer_and_body[1] = body;
+        Block *ini_body = calloc(1, sizeof(Block));
+        ini_body->statements = initializer_and_body;
+        ini_body->len_statements = 2;
+        body = init_statement_block(ini_body);
+    }
+    return body;
 }
 
 Statement *statement(Parser *parser)
@@ -596,6 +658,12 @@ Statement *statement(Parser *parser)
         Block *blk = block(parser);
         Statement *block_stmt = init_statement_block(blk);
         return block_stmt;
+    }
+    allowed = FOR;
+    if (match_parser(parser, &allowed, 1))
+    {
+        advance_parser(parser); // consume for token
+        return forStatement(parser);
     }
     allowed = IF;
     if (match_parser(parser, &allowed, 1))

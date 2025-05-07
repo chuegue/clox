@@ -1,0 +1,32 @@
+print "hi" or 2; // "hi".
+print nil or "yes"; // "yes".
+print "";
+
+var a = 9;
+var b = 8;
+if(a == 69){
+    print "truthy";
+    a = 0;
+}else{
+    print "falsey";
+    a = 1;
+}
+if(a < 8 and b == 8){
+    print "both truthy";
+}
+print "";
+
+var i = 10;
+while(i >= 0){
+    print i;
+    i = i - 1;
+}
+print "";
+
+var a = 0;
+var temp;
+for (var b = 1; a < 10000; b = temp + b) {
+  print a;
+  temp = a;
+  a = b;
+}
