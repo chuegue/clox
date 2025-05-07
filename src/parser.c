@@ -95,6 +95,17 @@ void free_expression(Expression *expr)
     free(expr);
 }
 
+void free_statement(Statement *stmt);
+void free_block(Block *blk){
+    for(size_t i = 0; i < blk->len_statements; i++){
+        free_statement(blk->statements[i]);
+        blk->statements[i] = NULL;
+    }
+    free(blk->statements);
+    blk->statements = NULL;
+    free(blk);
+}
+
 void free_statement(Statement *stmt)
 {
     if (!stmt)
@@ -115,6 +126,10 @@ void free_statement(Statement *stmt)
         // stmt->data.var.name = NULL;
         free_expression(stmt->data.var.initializer);
         stmt->data.var.initializer = NULL;
+        break;
+    case STMT_BLOCK:
+        free_block(stmt->data.block);
+        stmt->data.block = NULL;
         break;
     default:
         break;
@@ -444,9 +459,7 @@ Statement *init_statement_block(Block *blk)
 {
     Statement *new = calloc(1, sizeof(Statement));
     new->type = STMT_BLOCK;
-    new->data.block = calloc(1, sizeof(Block)); 
-    new->data.block->statements = blk->statements;
-    new->data.block->len_statements = blk->len_statements;
+    new->data.block = blk;
     return new;
 }
 
@@ -468,12 +481,15 @@ Statement *expressionStatement(Parser *parser)
 }
 
 Statement *declaration(Parser *parser);
-Block *block(Parser *parser){
+Block *block(Parser *parser)
+{
     size_t len_statements = 0, size_statements = 128;
     Statement **statements = calloc(size_statements, sizeof(Statement *));
 
-    while(!check(parser, RIGHT_BRACE) && !isAtEnd_parser(parser)){
-        if(len_statements>=size_statements){
+    while (!check(parser, RIGHT_BRACE) && !isAtEnd_parser(parser))
+    {
+        if (len_statements >= size_statements)
+        {
             size_statements *= 2;
             statements = realloc(statements, size_statements * sizeof(Statement *));
         }

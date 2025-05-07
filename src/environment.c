@@ -13,8 +13,8 @@ EnvironmentNode *init_environment_node(char *name, Literal *value)
 
 void free_environment_node(EnvironmentNode *node)
 {
-    free(node->key);
-    node->key = NULL;
+    // free(node->key);
+    // node->key = NULL;
     Literal *lit = node->value;
     if (lit->token_type == STRING)
     {
@@ -32,7 +32,7 @@ void free_environment_node(EnvironmentNode *node)
 
 Environment *init_environment(Environment *enclosing)
 {
-    Environment *env = calloc(1, sizeof(Environment *));
+    Environment *env = calloc(1, sizeof(Environment));
     env->nodes = calloc(ENVIRONMENT_SIZE, sizeof(EnvironmentNode *));
     env->enclosing = enclosing;
     return env;
@@ -50,6 +50,7 @@ void free_environment(Environment *env)
                 tmp = head;
                 head = head->next;
                 free_environment_node(tmp);
+                tmp = NULL;
             }
         }
     }
@@ -90,8 +91,6 @@ void put_environment(Environment *env, char *name, Literal *value)
     }
     // append at the end
     EnvironmentNode *new = init_environment_node(name, value);
-    new->key = strdup(name);
-    new->value = value;
     new->next = env->nodes[idx];
     env->nodes[idx] = new;
 }

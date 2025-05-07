@@ -274,6 +274,8 @@ void executeBlock(Interpreter *interpreter, Block *blk, Environment *environment
     {
         execute(interpreter, blk->statements[i], error_code);
     }
+    free_environment(environment);
+    environment = NULL;
     interpreter->env = previous;
 }
 
