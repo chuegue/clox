@@ -58,6 +58,14 @@ void visitVarStatement(Interpreter *interpreter, Statement *stmt)
     return;
 }
 
+void visitWhileStatement(Interpreter *interpreter, Statement *stmt)
+{
+    while (isTruthy(evaluate(interpreter, stmt->data.while_stmt.condition, error_code)))
+    {
+        execute(interpreter, stmt->data.while_stmt.body, error_code);
+    }
+}
+
 void visitBlockStatement(Interpreter *interpreter, Statement *stmt)
 {
     executeBlock(interpreter, stmt->data.block, init_environment(interpreter->env));
@@ -87,7 +95,10 @@ Literal *visitGroupingExpr(Interpreter *interpreter, Expression *expr)
 
 int isTruthy(Literal *object)
 {
-    if(!object){return 0;}
+    if (!object)
+    {
+        return 0;
+    }
     if (object->token_type == NIL && object->data.null == 1)
     {
         return 0;
@@ -378,8 +389,11 @@ void execute(Interpreter *interpreter, Statement *statement, int *error_code_par
     case STMT_IF:
         visitIfStatement(interpreter, statement);
         break;
+    case STMT_WHILE:
+        visitWhileStatement(interpreter, statement);
+        break;
     default:
-        printf("HOW THE FUCK DID YOU GET HERE execute()\n");
+        fprintf(stderr, "Visiting statement type %d not implemented\n", statement->type);
         break;
     }
 }

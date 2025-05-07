@@ -5,7 +5,6 @@
 
 int error_return_global = 0;
 
-
 void free_statement(Statement *stmt);
 Expression *expression(Parser *parser);
 Statement *statement(Parser *parser);
@@ -48,6 +47,58 @@ Expression *init_expression_assign(Parser *parser, Token *name, Expression *valu
     expression->as.assign.value = value;
     expression->type = type;
     return expression;
+}
+
+Statement *init_statement_expr(Expression *expr)
+{
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = STMT_EXPR;
+    new->data.expr.expression = expr;
+    return new;
+}
+
+Statement *init_statement_print(Expression *expr)
+{
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = STMT_PRINT;
+    new->data.print.expression = expr;
+    return new;
+}
+
+Statement *init_statement_var(Token *name, Expression *initializer)
+{
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = STMT_VAR;
+    new->data.var.name = name;
+    new->data.var.initializer = initializer;
+    return new;
+}
+
+Statement *init_statement_block(Block *blk)
+{
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = STMT_BLOCK;
+    new->data.block = blk;
+    return new;
+}
+
+Statement *init_statement_if(Expression *condition, Statement *thenBranch, Statement *elseBranch)
+{
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = STMT_IF;
+    new->data.if_stmt.condition = condition;
+    new->data.if_stmt.thenBranch = thenBranch;
+    new->data.if_stmt.elseBranch = elseBranch;
+    return new;
+}
+
+Statement *init_statement_while(Expression *condition, Statement *body)
+{
+    Statement *new = calloc(1, sizeof(Statement));
+    new->type = STMT_WHILE;
+    new->data.while_stmt.condition = condition;
+    new->data.while_stmt.body = body;
+    return new;
 }
 
 Parser *init_parser(Token **tokens, size_t len_tokens)
@@ -145,6 +196,12 @@ void free_statement(Statement *stmt)
         stmt->data.if_stmt.thenBranch = NULL;
         free_statement(stmt->data.if_stmt.elseBranch);
         stmt->data.if_stmt.elseBranch = NULL;
+        break;
+    case STMT_WHILE:
+        free_expression(stmt->data.while_stmt.condition);
+        stmt->data.while_stmt.condition = NULL;
+        free_statement(stmt->data.while_stmt.body);
+        stmt->data.while_stmt.body = NULL;
         break;
     default:
         fprintf(stderr, "Free statement unimplememted for this kind of statement: %d\n", stmt->type);
@@ -396,28 +453,32 @@ Expression *equality(Parser *parser)
     return expr;
 }
 
-Expression *and(Parser *parser){
+Expression *and(Parser *parser)
+{
     Expression *expr = equality(parser);
 
     TokenType allowed = AND;
-    while(match_parser(parser, &allowed, 1)){
-        advance_parser(parser); //consume AND token
-        Token *operator = previous(parser);
+    while (match_parser(parser, &allowed, 1))
+    {
+        advance_parser(parser); // consume AND token
+        Token *op = previous(parser);
         Expression *right = equality(parser);
-        expr = init_expression_binary(expr, operator, right, EXPR_BINARY);
+        expr = init_expression_binary(expr, op, right, EXPR_BINARY);
     }
     return expr;
 }
 
-Expression *or(Parser *parser){
+Expression *or(Parser *parser)
+{
     Expression *expr = and(parser);
 
     TokenType allowed = OR;
-    while(match_parser(parser, &allowed, 1)){
-        advance_parser(parser); //consume OR token
-        Token *operator = previous(parser);
+    while (match_parser(parser, &allowed, 1))
+    {
+        advance_parser(parser); // consume OR token
+        Token *op = previous(parser);
         Expression *right = and(parser);
-        expr = init_expression_binary(expr, operator, right, EXPR_BINARY);
+        expr = init_expression_binary(expr, op, right, EXPR_BINARY);
     }
     return expr;
 }
@@ -445,49 +506,6 @@ Expression *assignment(Parser *parser)
 Expression *expression(Parser *parser)
 {
     return assignment(parser);
-}
-
-Statement *init_statement_expr(Expression *expr)
-{
-    Statement *new = calloc(1, sizeof(Statement));
-    new->type = STMT_EXPR;
-    new->data.expr.expression = expr;
-    return new;
-}
-
-Statement *init_statement_print(Expression *expr)
-{
-    Statement *new = calloc(1, sizeof(Statement));
-    new->type = STMT_PRINT;
-    new->data.print.expression = expr;
-    return new;
-}
-
-Statement *init_statement_var(Token *name, Expression *initializer)
-{
-    Statement *new = calloc(1, sizeof(Statement));
-    new->type = STMT_VAR;
-    new->data.var.name = name;
-    new->data.var.initializer = initializer;
-    return new;
-}
-
-Statement *init_statement_block(Block *blk)
-{
-    Statement *new = calloc(1, sizeof(Statement));
-    new->type = STMT_BLOCK;
-    new->data.block = blk;
-    return new;
-}
-
-Statement *init_statement_if(Expression *condition, Statement *thenBranch, Statement *elseBranch)
-{
-    Statement *new = calloc(1, sizeof(Statement));
-    new->type = STMT_IF;
-    new->data.if_stmt.condition = condition;
-    new->data.if_stmt.thenBranch = thenBranch;
-    new->data.if_stmt.elseBranch = elseBranch;
-    return new;
 }
 
 Statement *printStatement(Parser *parser)
@@ -539,10 +557,20 @@ Statement *ifStatement(Parser *parser)
     TokenType allowed = ELSE;
     if (match_parser(parser, &allowed, 1))
     {
-        advance_parser(parser); //consume ELSE token
+        advance_parser(parser); // consume ELSE token
         elseBranch = statement(parser);
     }
     Statement *ret = init_statement_if(condition, thenBranch, elseBranch);
+    return ret;
+}
+
+Statement *whileStatement(Parser *parser)
+{
+    consume(parser, LEFT_PAREN, "Expect '(' after 'while'.");
+    Expression *condition = expression(parser);
+    consume(parser, RIGHT_PAREN, "Expect ')' after condition.");
+    Statement *body = statement(parser);
+    Statement *ret = init_statement_while(condition, body);
     return ret;
 }
 
@@ -553,6 +581,12 @@ Statement *statement(Parser *parser)
     {
         advance_parser(parser); // Consume PRINT token
         return printStatement(parser);
+    }
+    allowed = WHILE;
+    if (match_parser(parser, &allowed, 1))
+    {
+        advance_parser(parser); // consume WHILE token
+        return whileStatement(parser);
     }
     allowed = LEFT_BRACE;
     if (match_parser(parser, &allowed, 1))

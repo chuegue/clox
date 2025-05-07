@@ -55,6 +55,7 @@ typedef enum
     STMT_VAR,
     STMT_BLOCK,
     STMT_IF,
+    STMT_WHILE,
 } StatementType;
 
 typedef struct Statement_ Statement;
@@ -87,6 +88,10 @@ typedef struct Statement_
             Statement *thenBranch;
             Statement *elseBranch;
         } if_stmt;
+        struct {
+            Expression *condition;
+            Statement *body;
+        } while_stmt;
     } data;
 
 } Statement;
